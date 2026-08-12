@@ -30,9 +30,9 @@
     color: var(--color-muted);
     font-size: 0.9375rem;
     font-weight: 500;
+    gap: 10px;
     transition:
-      background-color 120ms ease,
-      color 120ms ease;
+      background-color 120ms ease, color 120ms ease;
 
     &:hover {
       background-color: var(--color-background);
@@ -48,6 +48,13 @@
         color: var(--color-surface);
       }
     }
+  }
+
+  &__icon {
+    width: 25px;
+    height: 25px;
+    flex: 0 0 20px;
+    object-fit: contain;
   }
 }
 

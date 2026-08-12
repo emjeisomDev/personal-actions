@@ -1,12 +1,19 @@
 <aside class="sidebar">
   <nav class="sidebar__navigation" aria-label="Navegação principal">
     <a
-      class="sidebar__link sidebar__link--active"
-      routerLink="/"
+      class="sidebar__link"
+      routerLink="/study-time"
       routerLinkActive="sidebar__link--active"
       [routerLinkActiveOptions]="{ exact: true }"
     >
-      <span>Início</span>
+      <img
+        class="sidebar__icon"
+        src="assets/sidebar-icons/study-time.png"
+        alt=""
+        aria-hidden="true"
+      />
+
+      <span>Horas de Estudo</span>
     </a>
   </nav>
 </aside>
