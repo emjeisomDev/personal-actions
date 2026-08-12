@@ -18,11 +18,29 @@
     font-size: 0.9375rem;
   }
 
-  &__content {
-    padding: 24px;
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
+  &__cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    align-items: start;
+  }
+
+  &__empty {
+    grid-column: 1 / -1;
+    padding: 32px;
     color: var(--color-muted);
+    text-align: center;
+  }
+}
+
+@media (max-width: 1100px) {
+  .study-time__cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .study-time__cards {
+    grid-template-columns: 1fr;
   }
 }

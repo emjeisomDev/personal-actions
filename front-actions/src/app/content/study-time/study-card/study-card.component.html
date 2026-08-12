@@ -1,0 +1,159 @@
+<article class="study-card">
+  <header class="study-card__header">
+    <div>
+      <h2 class="study-card__title">
+        {{ studyArea.name }}
+      </h2>
+
+      <span class="study-card__goal">
+        Meta semanal:
+        {{ formatMinutes(studyArea.weeklyGoalMinutes) }}
+      </span>
+    </div>
+  </header>
+
+  <section
+    class="study-card__progress"
+    aria-label="Progresso semanal"
+  >
+    <div class="study-card__progress-header">
+      <span>Progresso</span>
+
+      <strong>
+        {{ progressPercentage | number: '1.0-0' }}%
+      </strong>
+    </div>
+
+    <div
+      class="study-card__progress-track"
+      role="progressbar"
+      [attr.aria-valuenow]="progressPercentage"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      [attr.aria-label]="
+        'Progresso de ' + studyArea.name
+      "
+    >
+      <div
+        class="study-card__progress-value"
+        [class.study-card__progress-value--completed]="
+          goalCompleted
+        "
+        [style.width.%]="progressPercentage"
+      ></div>
+    </div>
+
+    @if (goalCompleted) {
+      <span class="study-card__goal-completed">
+        Meta semanal atingida!
+      </span>
+    }
+  </section>
+
+  <section class="study-card__summary">
+    <div class="study-card__summary-item">
+      <span class="study-card__summary-label">
+        Estudado nesta semana
+      </span>
+
+      <strong class="study-card__summary-value">
+        {{ formatMinutes(weeklyStudiedMinutes) }}
+      </strong>
+    </div>
+
+    <div class="study-card__summary-item">
+      <span class="study-card__summary-label">
+        Restante da meta
+      </span>
+
+      <strong class="study-card__summary-value">
+        {{ formatMinutes(remainingMinutes) }}
+      </strong>
+    </div>
+  </section>
+
+  <section
+    class="study-card__time-entry"
+    aria-label="Registrar tempo de estudo"
+  >
+    <label
+      class="study-card__input-label"
+      [attr.for]="'study-time-' + studyArea.id"
+    >
+      Tempo estudado
+    </label>
+
+    <input
+      [id]="'study-time-' + studyArea.id"
+      class="study-card__time-input"
+      type="text"
+      inputmode="text"
+      autocomplete="off"
+      placeholder="Ex.: 01:30"
+      [value]="studyTimeInput"
+      (input)="onStudyTimeInput($event)"
+      (keyup.enter)="submitStudyTime()"
+      aria-describedby="study-time-help"
+    />
+
+    <div class="study-card__actions">
+      <button
+        type="button"
+        class="study-card__action-button
+               study-card__action-button--submit"
+        [disabled]="!studyTimeInput.trim()"
+        (click)="submitStudyTime()"
+      >
+        ENVIAR
+      </button>
+
+      <button
+        type="button"
+        class="study-card__action-button
+               study-card__action-button--remove"
+        [disabled]="!hasStudyRecords"
+        (click)="removeStudyTime()"
+      >
+        REMOVER ÚLTIMO
+      </button>
+    </div>
+
+    <small
+      id="study-time-help"
+      class="study-card__input-help"
+    >
+      Informe em minutos ou no formato hh:mm.
+      O botão REMOVER ÚLTIMO desfaz o último lançamento.
+    </small>
+  </section>
+
+  <section class="study-card__records">
+    <h3 class="study-card__records-title">
+      Registro semanal
+    </h3>
+
+    <ul class="study-card__records-list">
+      @for (
+        record of studyArea.studyRecords;
+        track record.id
+      ) {
+        <li class="study-card__record">
+          <span class="study-card__record-date">
+            {{ formatDate(record.date) }}
+          </span>
+
+          <strong class="study-card__record-time">
+            {{ formatMinutes(record.minutes) }}
+          </strong>
+        </li>
+      } @empty {
+        <li
+          class="study-card__record
+                 study-card__record--empty"
+        >
+          Nenhum estudo registrado nesta semana.
+        </li>
+      }
+    </ul>
+  </section>
+</article>

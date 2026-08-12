@@ -1,12 +1,25 @@
 <section class="study-time">
   <header class="study-time__header">
-    <h1 class="study-time__title">Horas de Estudo</h1>
+    <h1 class="study-time__title">
+      Horas de Estudo
+    </h1>
+
     <p class="study-time__description">
-      Acompanhe suas horas de estudo.
+      Acompanhe seu progresso semanal por área de estudo.
     </p>
   </header>
 
-  <div class="study-time__content">
-    <p>Conteúdo de Horas de Estudo</p>
+  <div class="study-time__cards">
+    @for (studyArea of studyAreas; track studyArea.id) {
+      <app-study-card
+        [studyArea]="studyArea"
+        (studyTimeAdded)="onStudyTimeAdded(studyArea, $event)"
+        (studyTimeRemoved)="onStudyTimeRemoved(studyArea)"
+      />
+    } @empty {
+      <p class="study-time__empty">
+        Nenhuma área de estudo cadastrada.
+      </p>
+    }
   </div>
 </section>
