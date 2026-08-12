@@ -99,8 +99,7 @@
     <div class="study-card__actions">
       <button
         type="button"
-        class="study-card__action-button
-               study-card__action-button--submit"
+        class="study-card__action-button study-card__action-button--submit"
         [disabled]="!studyTimeInput.trim()"
         (click)="submitStudyTime()"
       >
@@ -109,8 +108,7 @@
 
       <button
         type="button"
-        class="study-card__action-button
-               study-card__action-button--remove"
+        class="study-card__action-button study-card__action-button--remove"
         [disabled]="!hasStudyRecords"
         (click)="removeStudyTime()"
       >
@@ -122,8 +120,8 @@
       id="study-time-help"
       class="study-card__input-help"
     >
-      Informe em minutos ou no formato hh:mm.
-      O botão REMOVER ÚLTIMO desfaz o último lançamento.
+      Informe em minutos ou no formato hh:mm. <br>
+      O botão <b>REMOVER ÚLTIMO</b> desfaz o último lançamento.
     </small>
   </section>
 

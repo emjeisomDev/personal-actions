@@ -279,6 +279,115 @@ describe('StudyTimeComponent', () => {
         ?.studyRecords.length
     ).toBe(recordsBefore);
   });
+
+  it('should create a record with id and creation timestamp', () => {
+    const studyArea =
+      component.studyAreas[0];
+
+    const recordsBefore =
+      studyArea.studyRecords.length;
+
+    component.onStudyTimeAdded(
+      studyArea,
+      30
+    );
+
+    const updatedStudyArea =
+      component.studyAreas.find(
+        area =>
+          area.id === studyArea.id
+      );
+
+    const lastRecord =
+      updatedStudyArea?.studyRecords.at(-1);
+
+    expect(
+      updatedStudyArea
+        ?.studyRecords.length
+    ).toBe(recordsBefore + 1);
+
+    expect(
+      lastRecord?.id
+    ).toBeTruthy();
+
+    expect(
+      lastRecord?.date
+    ).toBe(getTodayDate());
+
+    expect(
+      lastRecord?.minutes
+    ).toBe(30);
+
+    expect(
+      lastRecord?.createdAt
+    ).toBeTruthy();
+
+    expect(
+      Date.parse(
+        lastRecord?.createdAt ?? ''
+      )
+    ).not.toBeNaN();
+  });
+
+  it('should remove the last created record first', () => {
+    const studyArea =
+      component.studyAreas[0];
+
+    component.onStudyTimeAdded(
+      studyArea,
+      30
+    );
+
+    component.onStudyTimeAdded(
+      studyArea,
+      45
+    );
+
+    const updatedStudyArea =
+      component.studyAreas.find(
+        area =>
+          area.id === studyArea.id
+      );
+
+    const lastRecord =
+      updatedStudyArea
+        ?.studyRecords.at(-1);
+
+    expect(
+      lastRecord?.minutes
+    ).toBe(45);
+
+    const lastRecordId =
+      lastRecord?.id;
+
+    component.onStudyTimeRemoved(
+      studyArea
+    );
+
+    const afterRemoval =
+      component.studyAreas.find(
+        area =>
+          area.id === studyArea.id
+      );
+
+    expect(
+      afterRemoval
+        ?.studyRecords
+        .some(
+          record =>
+            record.id === lastRecordId
+        )
+    ).toBeFalse();
+
+    expect(
+      afterRemoval
+        ?.studyRecords
+        .at(-1)
+        ?.minutes
+    ).toBe(30);
+  });
+
+
 });
 
 function getTodayDate(): string {

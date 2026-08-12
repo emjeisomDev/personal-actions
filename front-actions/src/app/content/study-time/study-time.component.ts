@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component } from '@angular/core';
 
 import { StudyArea } from './models/study-area.model';
 import { StudyRecord } from './models/study-record.model';
@@ -13,58 +13,65 @@ import { StudyRecord } from './models/study-record.model';
 export class StudyTimeComponent {
   studyAreas: StudyArea[] = [
     {
-      id: 'concursos',
-      name: 'Concursos',
-      weeklyGoalMinutes: 900,
+      id: 'concusos',
+      name: 'Concusos',
+      weeklyGoalMinutes: 600,
       studyRecords: [
         {
-          id: 'concursos-2026-08-10-01',
+          id: 'concusos-2026-08-10-01',
           date: '2026-08-10',
-          minutes: 180
+          minutes: 60,
+          createdAt: '2026-08-10T18:00:00-03:00'
         },
         {
-          id: 'concursos-2026-08-11-01',
+          id: 'concusos-2026-08-11-01',
           date: '2026-08-11',
-          minutes: 180
+          minutes: 90,
+          createdAt: '2026-08-11T19:00:00-03:00'
         },
         {
-          id: 'concursos-2026-08-12-01',
+          id: 'concusos-2026-08-12-01',
           date: '2026-08-12',
-          minutes: 180
+          minutes: 120,
+          createdAt: '2026-08-12T18:30:00-03:00'
         }
       ]
     },
     {
       id: 'engenharia',
-      name: 'Engenharia',
+      name: 'Inglês',
       weeklyGoalMinutes: 300,
       studyRecords: [
         {
           id: 'engenharia-2026-08-10-01',
           date: '2026-08-10',
-          minutes: 30
+          minutes: 30,
+          createdAt: '2026-08-10T20:00:00-03:00'
         },
         {
           id: 'engenharia-2026-08-12-01',
           date: '2026-08-12',
-          minutes: 60
+          minutes: 60,
+          createdAt: '2026-08-12T19:00:00-03:00'
         }
       ]
     },
     {
       id: 'tech',
       name: 'Tech',
-      weeklyGoalMinutes: 300,
+      weeklyGoalMinutes: 240,
       studyRecords: [
         {
           id: 'tech-2026-08-11-01',
           date: '2026-08-11',
-          minutes: 60
+          minutes: 60,
+          createdAt: '2026-08-11T17:30:00-03:00'
         },
         {
           id: 'tech-2026-08-12-01',
           date: '2026-08-12',
-          minutes: 45
+          minutes: 45,
+          createdAt: '2026-08-12T18:00:00-03:00'
         }
       ]
     }
@@ -74,14 +81,18 @@ export class StudyTimeComponent {
     studyArea: StudyArea,
     minutes: number
   ): void {
-    if (minutes <= 0 || !Number.isFinite(minutes)) {
+    if (
+      minutes <= 0 ||
+      !Number.isFinite(minutes)
+    ) {
       return;
     }
 
     const record: StudyRecord = {
       id: crypto.randomUUID(),
       date: this.getTodayDate(),
-      minutes
+      minutes,
+      createdAt: new Date().toISOString()
     };
 
     this.updateStudyArea(
@@ -102,7 +113,9 @@ export class StudyTimeComponent {
     this.updateStudyArea(
       studyArea.id,
       area => {
-        if (area.studyRecords.length === 0) {
+        if (
+          area.studyRecords.length === 0
+        ) {
           return area;
         }
 
@@ -117,23 +130,29 @@ export class StudyTimeComponent {
 
   private updateStudyArea(
     studyAreaId: string,
-    update: (studyArea: StudyArea) => StudyArea
+    update: (
+      studyArea: StudyArea
+    ) => StudyArea
   ): void {
-    this.studyAreas = this.studyAreas.map(
-      studyArea =>
-        studyArea.id === studyAreaId
-          ? update(studyArea)
-          : studyArea
-    );
+    this.studyAreas =
+      this.studyAreas.map(
+        studyArea =>
+          studyArea.id === studyAreaId
+            ? update(studyArea)
+            : studyArea
+      );
   }
 
   private getTodayDate(): string {
     const today = new Date();
 
-    const year = today.getFullYear();
+    const year =
+      today.getFullYear();
+
     const month = String(
       today.getMonth() + 1
     ).padStart(2, '0');
+
     const day = String(
       today.getDate()
     ).padStart(2, '0');

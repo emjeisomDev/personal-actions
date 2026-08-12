@@ -1,4 +1,4 @@
-import {ComponentFixture, TestBed} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { StudyCardComponent } from './study-card.component';
 import { StudyArea } from '../models/study-area.model';
@@ -56,58 +56,6 @@ describe('StudyCardComponent', () => {
 
   it('should calculate remaining minutes', () => {
     expect(component.remainingMinutes).toBe(330);
-  });
-
-  it('should parse minutes without unit', () => {
-    expect(
-      component.parseStudyTime('90')
-    ).toBe(90);
-  });
-
-  it('should parse minutes with unit', () => {
-    expect(
-      component.parseStudyTime('90min')
-    ).toBe(90);
-  });
-
-  it('should parse hours', () => {
-    expect(
-      component.parseStudyTime('2h')
-    ).toBe(120);
-  });
-
-  it('should parse hours and minutes', () => {
-    expect(
-      component.parseStudyTime('1h 30min')
-    ).toBe(90);
-  });
-
-  it('should parse hh:mm format', () => {
-    expect(
-      component.parseStudyTime('01:30')
-    ).toBe(90);
-
-    expect(
-      component.parseStudyTime('08:45')
-    ).toBe(525);
-  });
-
-  it('should parse decimal hours', () => {
-    expect(
-      component.parseStudyTime('1,5h')
-    ).toBe(90);
-  });
-
-  it('should reject invalid time', () => {
-    expect(
-      component.parseStudyTime('abc')
-    ).toBeNull();
-  });
-
-  it('should reject minutes greater than 59', () => {
-    expect(
-      component.parseStudyTime('1h 60min')
-    ).toBeNull();
   });
 
   it('should emit added study time', () => {
@@ -280,6 +228,80 @@ describe('StudyCardComponent', () => {
       component.goalCompleted
     ).toBeTrue();
   });
+
+  it('should emit parsed study time', () => {
+    const emitSpy = spyOn(
+      component.studyTimeAdded,
+      'emit'
+    );
+
+    component.studyTimeInput =
+      '1h 30min';
+
+    component.submitStudyTime();
+
+    expect(
+      emitSpy
+    ).toHaveBeenCalledWith(90);
+
+    expect(
+      component.studyTimeInput
+    ).toBe('');
+  });
+
+  it('should not emit invalid study time', () => {
+    const emitSpy = spyOn(
+      component.studyTimeAdded,
+      'emit'
+    );
+
+    component.studyTimeInput =
+      'tempo inválido';
+
+    component.submitStudyTime();
+
+    expect(
+      emitSpy
+    ).not.toHaveBeenCalled();
+
+    expect(
+      component.studyTimeInput
+    ).toBe('tempo inválido');
+  });
+
+  it('should emit study time removed', () => {
+    const emitSpy = spyOn(
+      component.studyTimeRemoved,
+      'emit'
+    );
+
+    component.removeStudyTime();
+
+    expect(
+      emitSpy
+    ).toHaveBeenCalled();
+  });
+
+  it('should not emit study time removed when there are no records', () => {
+    component.studyArea = {
+      id: 'empty',
+      name: 'Empty',
+      weeklyGoalMinutes: 600,
+      studyRecords: []
+    };
+
+    const emitSpy = spyOn(
+      component.studyTimeRemoved,
+      'emit'
+    );
+
+    component.removeStudyTime();
+
+    expect(
+      emitSpy
+    ).not.toHaveBeenCalled();
+  });
+
 });
 
 function getCurrentWeekMonday(): Date {
@@ -298,7 +320,7 @@ function getCurrentWeekMonday(): Date {
 
   monday.setDate(
     today.getDate() -
-      daysFromMonday
+    daysFromMonday
   );
 
   return monday;

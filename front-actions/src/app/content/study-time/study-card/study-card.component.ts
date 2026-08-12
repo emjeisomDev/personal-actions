@@ -1,12 +1,7 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  Output
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
 
 import { StudyArea } from '../models/study-area.model';
+import { parseStudyTime } from '../utils/study-time-parser';
 
 @Component({
   selector: 'app-study-card',
@@ -16,25 +11,27 @@ import { StudyArea } from '../models/study-area.model';
   standalone: false
 })
 export class StudyCardComponent {
-  @Input({ required: true }) studyArea!: StudyArea;
+  @Input({ required: true })
+  studyArea!: StudyArea;
 
-  @Output() studyTimeAdded = new EventEmitter<number>();
-  @Output() studyTimeRemoved = new EventEmitter<void>();
+  @Output()
+  studyTimeAdded = new EventEmitter<number>();
+
+  @Output()
+  studyTimeRemoved = new EventEmitter<void>();
 
   studyTimeInput = '';
 
   get weeklyStudiedMinutes(): number {
-    const { start, end } = this.getCurrentWeekRange();
+    const { start, end } =
+      this.getCurrentWeekRange();
 
     return this.studyArea.studyRecords
       .filter(record => {
         const recordDate = this.parseDate(record.date);
-
-        return recordDate >= start && recordDate <= end;
+        return (recordDate >= start && recordDate <= end);
       })
-      .reduce(
-        (total, record) => total + record.minutes,
-        0
+      .reduce((total, record) => total + record.minutes, 0
       );
   }
 
@@ -46,40 +43,33 @@ export class StudyCardComponent {
       return 0;
     }
 
-    return Math.min(
-      (this.weeklyStudiedMinutes / weeklyGoal) * 100,
-      100
-    );
+    return Math.min((this.weeklyStudiedMinutes / weeklyGoal) * 100, 100 );
   }
 
   get remainingMinutes(): number {
-    return Math.max(
-      this.studyArea.weeklyGoalMinutes -
-        this.weeklyStudiedMinutes,
-      0
-    );
+    return Math.max(this.studyArea.weeklyGoalMinutes - this.weeklyStudiedMinutes, 0 );
   }
 
   get goalCompleted(): boolean {
     return (
       this.studyArea.weeklyGoalMinutes > 0 &&
-      this.weeklyStudiedMinutes >=
-        this.studyArea.weeklyGoalMinutes
+      this.weeklyStudiedMinutes >= this.studyArea.weeklyGoalMinutes
     );
   }
 
   get hasStudyRecords(): boolean {
-    return this.studyArea.studyRecords.length > 0;
+    return (this.studyArea.studyRecords.length > 0);
   }
 
   onStudyTimeInput(event: Event): void {
-    const input = event.target as HTMLInputElement;
+    const input =
+      event.target as HTMLInputElement;
 
     this.studyTimeInput = input.value;
   }
 
   submitStudyTime(): void {
-    const minutes = this.parseStudyTime(
+    const minutes = parseStudyTime(
       this.studyTimeInput
     );
 
@@ -88,6 +78,7 @@ export class StudyCardComponent {
     }
 
     this.studyTimeAdded.emit(minutes);
+
     this.studyTimeInput = '';
   }
 
@@ -99,83 +90,13 @@ export class StudyCardComponent {
     this.studyTimeRemoved.emit();
   }
 
-  parseStudyTime(value: string): number | null {
-    const normalizedValue = value
-      .trim()
-      .toLowerCase()
-      .replace(',', '.');
-
-    if (!normalizedValue) {
-      return null;
-    }
-
-    const clockMatch = normalizedValue.match(
-      /^(\d{1,3}):([0-5]\d)$/
-    );
-
-    if (clockMatch) {
-      const hours = Number(clockMatch[1]);
-      const minutes = Number(clockMatch[2]);
-
-      if (
-        !Number.isFinite(hours) ||
-        !Number.isFinite(minutes)
-      ) {
-        return null;
-      }
-
-      return hours * 60 + minutes;
-    }
-
-    const hourMinuteMatch = normalizedValue.match(
-      /^(?:(\d+(?:\.\d+)?)\s*h)?\s*(?:(\d+)\s*min?)?$/
-    );
-
-    if (
-      hourMinuteMatch &&
-      (hourMinuteMatch[1] || hourMinuteMatch[2])
-    ) {
-      const hours = hourMinuteMatch[1]
-        ? Number(hourMinuteMatch[1])
-        : 0;
-
-      const minutes = hourMinuteMatch[2]
-        ? Number(hourMinuteMatch[2])
-        : 0;
-
-      if (
-        !Number.isFinite(hours) ||
-        !Number.isFinite(minutes) ||
-        minutes >= 60
-      ) {
-        return null;
-      }
-
-      return Math.round(
-        hours * 60 + minutes
-      );
-    }
-
-    const minutesOnly = normalizedValue.match(
-      /^(\d+(?:\.\d+)?)\s*(?:min)?$/
-    );
-
-    if (minutesOnly) {
-      const minutes = Number(minutesOnly[1]);
-
-      if (!Number.isFinite(minutes)) {
-        return null;
-      }
-
-      return Math.round(minutes);
-    }
-
-    return null;
-  }
-
   formatMinutes(minutes: number): string {
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
+    const hours = Math.floor(
+      minutes / 60
+    );
+
+    const remainingMinutes =
+      minutes % 60;
 
     if (hours === 0) {
       return `${remainingMinutes}min`;
@@ -189,11 +110,14 @@ export class StudyCardComponent {
   }
 
   formatDate(date: string): string {
-    return new Intl.DateTimeFormat('pt-BR', {
-      weekday: 'long',
-      day: '2-digit',
-      month: '2-digit'
-    }).format(this.parseDate(date));
+    return new Intl.DateTimeFormat(
+      'pt-BR',
+      {
+        weekday: 'long',
+        day: '2-digit',
+        month: '2-digit'
+      }
+    ).format(this.parseDate(date));
   }
 
   private getCurrentWeekRange(): {
@@ -202,23 +126,40 @@ export class StudyCardComponent {
   } {
     const today = new Date();
 
-    today.setHours(0, 0, 0, 0);
+    today.setHours(
+      0,
+      0,
+      0,
+      0
+    );
 
-    const dayOfWeek = today.getDay();
+    const dayOfWeek =
+      today.getDay();
 
     const daysFromMonday =
-      dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      dayOfWeek === 0
+        ? 6
+        : dayOfWeek - 1;
 
     const start = new Date(today);
 
     start.setDate(
-      today.getDate() - daysFromMonday
+      today.getDate() -
+        daysFromMonday
     );
 
     const end = new Date(start);
 
-    end.setDate(start.getDate() + 6);
-    end.setHours(23, 59, 59, 999);
+    end.setDate(
+      start.getDate() + 6
+    );
+
+    end.setHours(
+      23,
+      59,
+      59,
+      999
+    );
 
     return {
       start,
@@ -226,7 +167,11 @@ export class StudyCardComponent {
     };
   }
 
-  private parseDate(date: string): Date {
-    return new Date(`${date}T00:00:00`);
+  private parseDate(
+    date: string
+  ): Date {
+    return new Date(
+      `${date}T00:00:00`
+    );
   }
 }
