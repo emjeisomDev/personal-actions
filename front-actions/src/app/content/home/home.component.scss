@@ -1,0 +1,39 @@
+.home {
+  width: 100%;
+
+  &__header {
+    margin-bottom: 24px;
+  }
+
+  &__title {
+    color: var(--color-text);
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  &__description {
+    margin-top: 8px;
+    color: var(--color-muted);
+    font-size: 0.9375rem;
+  }
+
+  &__content {
+    padding: 24px;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+  }
+
+  &__subtitle {
+    color: var(--color-text);
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+
+  &__text {
+    margin-top: 8px;
+    color: var(--color-muted);
+    font-size: 0.9375rem;
+  }
+}

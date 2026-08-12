@@ -3,19 +3,22 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 import { ContentComponent } from './content/content.component';
-import { StudyTimeComponent } from './content/study-time/study-time.component';
+import { HomeComponent } from './home/home.component';
+import { StudyTimeComponent } from './study-time/study-time.component';
 
 @NgModule({
   declarations: [
     ContentComponent,
+    HomeComponent,
     StudyTimeComponent
   ],
   imports: [
     CommonModule,
     RouterModule
   ],
-  exports:[
+  exports: [
     ContentComponent,
+    HomeComponent,
     StudyTimeComponent
   ]
 })
