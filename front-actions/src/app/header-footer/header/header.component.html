@@ -1,6 +1,27 @@
 <header class="header">
   <div class="header__brand">
-    <span class="header__title">Personal Actions</span>
+    <button
+      type="button"
+      class="header__toggle"
+      aria-label="Alternar menu lateral"
+      title="Alternar menu lateral"
+      (click)="toggleSidebar()"
+    >
+      <img
+        class="header__toggle-icon"
+        src="assets/header-icons/menu-toggle.png"
+        alt=""
+        aria-hidden="true"
+      />
+    </button>
+
+    <a
+      class="header__home"
+      routerLink="/"
+      aria-label="Ir para a página inicial"
+    >
+      <span class="header__title">Personal Actions</span>
+    </a>
   </div>
 
   <div class="header__actions">

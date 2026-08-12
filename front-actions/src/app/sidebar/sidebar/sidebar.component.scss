@@ -1,8 +1,12 @@
 :host {
   display: flex;
   flex: 0 0 240px;
+  width: 240px;
   align-self: stretch;
   min-height: 0;
+  transition:
+    width 180ms ease,
+    flex-basis 180ms ease;
 }
 
 .sidebar {
@@ -12,8 +16,12 @@
   flex: 1 1 auto;
   min-height: 0;
   padding: 20px 16px;
+  overflow: hidden;
   background-color: var(--color-surface);
   border-right: 1px solid var(--color-border);
+  transition:
+    width 180ms ease,
+    padding 180ms ease;
 
   &__navigation {
     display: flex;
@@ -21,41 +29,73 @@
     gap: 4px;
   }
 
-  &__link {
-    display: flex;
-    align-items: center;
-    min-height: 42px;
-    padding: 0 12px;
-    border-radius: 8px;
-    color: var(--color-muted);
-    font-size: 0.9375rem;
-    font-weight: 500;
-    gap: 10px;
-    transition:
-      background-color 120ms ease, color 120ms ease;
+&__link {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 12px;
+  border-radius: 8px;
+  color: var(--color-text);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  gap: 10px;
+  white-space: nowrap;
+  transition:
+    background-color 120ms ease, color 120ms ease;
+
+  &:hover {
+    background-color: var(--color-background);
+    color: var(--color-primary);
+  }
+
+  &--active {
+    background-color: var(--color-primary);
+    color: var(--color-surface);
 
     &:hover {
-      background-color: var(--color-background);
-      color: var(--color-text);
-    }
-
-    &--active {
       background-color: var(--color-primary);
       color: var(--color-surface);
-
-      &:hover {
-        background-color: var(--color-primary);
-        color: var(--color-surface);
-      }
     }
   }
+}
 
   &__icon {
     width: 25px;
     height: 25px;
-    flex: 0 0 20px;
+    flex: 0 0 25px;
     object-fit: contain;
   }
+
+  &__label {
+    overflow: hidden;
+    max-width: 180px;
+    opacity: 1;
+    transition:
+      max-width 180ms ease,
+      opacity 120ms ease;
+
+    &--hidden {
+      max-width: 0;
+      opacity: 0;
+    }
+  }
+
+  &--collapsed {
+    width: 72px;
+    padding-left: 12px;
+    padding-right: 12px;
+
+    .sidebar__link {
+      justify-content: center;
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+  }
+}
+
+:host:has(.sidebar--collapsed) {
+  flex-basis: 72px;
+  width: 72px;
 }
 
 @media (max-width: 768px) {
@@ -68,5 +108,14 @@
     width: 100%;
     border-right: 0;
     border-bottom: 1px solid var(--color-border);
+
+    &--collapsed {
+      width: 100%;
+    }
+  }
+
+  :host:has(.sidebar--collapsed) {
+    flex-basis: auto;
+    width: 100%;
   }
 }

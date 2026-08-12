@@ -23,4 +23,20 @@ describe('SidebarComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should be expanded by default', () => {
+  expect(component.collapsed).toBeFalse();
+});
+
+it('should hide the menu label when collapsed', () => {
+  component.collapsed = true;
+  fixture.detectChanges();
+
+  const label = fixture.nativeElement.querySelector(
+    '.sidebar__label'
+  ) as HTMLElement;
+
+  expect(label.classList.contains('sidebar__label--hidden')).toBeTrue();
+});
+
 });

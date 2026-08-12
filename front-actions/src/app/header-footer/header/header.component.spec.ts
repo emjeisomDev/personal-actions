@@ -20,4 +20,17 @@ describe('HeaderComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should emit sidebarToggle when the toggle button is clicked', () => {
+  const emitSpy = spyOn(component.sidebarToggle, 'emit');
+
+  const button = fixture.nativeElement.querySelector(
+    '.header__toggle'
+  ) as HTMLButtonElement;
+
+  button.click();
+
+  expect(emitSpy).toHaveBeenCalled();
+});
+
 });

@@ -6,6 +6,10 @@ const routes: Routes = [
   {
     path: 'study-time',
     component: StudyTimeComponent
+  },
+  {
+    path: '**',
+    redirectTo: ''
   }
 ];
 

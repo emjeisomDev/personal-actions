@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Output  } from '@angular/core';
 
 @Component({
   selector: 'app-header',
@@ -7,4 +7,10 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class HeaderComponent {}
+export class HeaderComponent {
+  @Output() sidebarToggle = new EventEmitter<void>();
+
+  toggleSidebar(): void {
+    this.sidebarToggle.emit();
+  }
+}

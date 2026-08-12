@@ -13,11 +13,13 @@
     flex: 1 1 auto;
     min-height: 0;
     align-items: stretch;
+    overflow: hidden;
   }
 }
 
 @media (max-width: 768px) {
   .app-shell__body {
     flex-direction: column;
+    overflow: visible;
   }
 }

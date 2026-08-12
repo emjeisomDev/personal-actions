@@ -1,19 +1,31 @@
-<aside class="sidebar">
-  <nav class="sidebar__navigation" aria-label="Navegação principal">
+<aside
+  class="sidebar"
+  [class.sidebar--collapsed]="collapsed"
+>
+  <nav
+    class="sidebar__navigation"
+    aria-label="Navegação principal"
+  >
     <a
       class="sidebar__link"
       routerLink="/study-time"
       routerLinkActive="sidebar__link--active"
       [routerLinkActiveOptions]="{ exact: true }"
+      [attr.title]="collapsed ? 'Horas de Estudo' : null"
     >
       <img
         class="sidebar__icon"
         src="assets/sidebar-icons/study-time.png"
-        alt=""
+        alt="study-time"
         aria-hidden="true"
       />
 
-      <span>Horas de Estudo</span>
+      <span
+        class="sidebar__label"
+        [class.sidebar__label--hidden]="collapsed"
+      >
+        Horas de Estudo
+      </span>
     </a>
   </nav>
 </aside>

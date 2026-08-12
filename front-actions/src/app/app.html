@@ -1,8 +1,15 @@
-<div class="app-shell">
-  <app-header />
+<div
+  class="app-shell"
+  [class.app-shell--sidebar-collapsed]="sidebarCollapsed"
+>
+  <app-header
+    (sidebarToggle)="toggleSidebar()"
+  />
 
   <div class="app-shell__body">
-    <app-sidebar />
+    <app-sidebar
+      [collapsed]="sidebarCollapsed"
+    />
 
     <app-content />
   </div>
