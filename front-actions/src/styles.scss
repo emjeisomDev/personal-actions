@@ -1,0 +1,74 @@
+/* =========================
+   Global
+   ========================= */
+
+:root {
+  --color-background: #f4f7fe;
+  --color-surface: #f0f0f0;
+  --color-text: #1b254b;
+  --color-muted: rgba(27, 37, 75, 0.65);
+  --color-border: rgba(27, 37, 75, 0.08);
+  --color-primary: #1b254b;
+  --color-danger: #b42318;
+
+  --font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  min-height: 100%;
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-family);
+  line-height: 1.5;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}

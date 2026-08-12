@@ -1,0 +1,23 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+
+  &__body {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-shell__body {
+    flex-direction: column;
+  }
+}
