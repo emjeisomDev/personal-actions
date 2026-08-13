@@ -1,0 +1,17 @@
+# back-actions
+
+Backend da aplicação personal-actions.
+
+## Tecnologias
+
+- Node.js
+- TypeScript
+- Express
+- Vitest
+
+## Desenvolvimento
+
+Instalar dependências:
+
+```bash
+npm install
