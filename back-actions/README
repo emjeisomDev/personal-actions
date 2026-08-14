@@ -7,11 +7,17 @@ Backend da aplicação personal-actions.
 - Node.js
 - TypeScript
 - Express
+- PostgreSQL
 - Vitest
 
-## Desenvolvimento
+## Requisitos
 
-Instalar dependências:
+- Node.js
+- PostgreSQL
+
+## Instalação
+
+Instalar as dependências:
 
 ```bash
 npm install
