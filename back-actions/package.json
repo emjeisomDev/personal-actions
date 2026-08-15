@@ -11,12 +11,16 @@
     "start": "node dist/server.js",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "node-pg-migrate up",
+    "db:migrate:down": "node-pg-migrate down",
+    "db:migrate:create": "node-pg-migrate create"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
+    "node-pg-migrate": "^9.0.0",
     "pg": "^8.16.3"
   },
   "devDependencies": {
