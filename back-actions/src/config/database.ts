@@ -15,7 +15,8 @@ export async function checkDatabaseConnection(): Promise<void> {
 
     try {
         await client.query('SELECT 1');
-    } finally {
+    }
+    finally {
         client.release();
     }
 }
