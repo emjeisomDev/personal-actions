@@ -34,18 +34,27 @@ export class StudyRecordService {
     ): Promise<StudyRecord> {
         this.validateDate(input.date);
 
-        if (!Number.isInteger(input.minutes) || input.minutes <= 0) {
+        if (
+            !Number.isInteger(input.minutes) ||
+            input.minutes <= 0
+        ) {
             throw new ValidationError(
                 'Study record minutes must be a positive integer.',
                 'INVALID_STUDY_RECORD_MINUTES'
             );
         }
 
-        const studyAreaWeek = await this.studyAreaWeekRepository
-            .findById(input.studyAreaWeekId);
+        const studyAreaWeek =
+            await this.studyAreaWeekRepository
+                .findById(
+                    input.studyAreaWeekId
+                );
 
         if (!studyAreaWeek) {
-            throw new EntityNotFoundError('StudyAreaWeek', input.studyAreaWeekId);
+            throw new EntityNotFoundError(
+                'StudyAreaWeek',
+                input.studyAreaWeekId
+            );
         }
 
         return withTransaction(
@@ -56,7 +65,10 @@ export class StudyRecordService {
                         client
                     );
 
-                const assessmentRepository = new WeeklyAssessmentRepository(client);
+                const assessmentRepository =
+                    new WeeklyAssessmentRepository(
+                        client
+                    );
 
                 const record =
                     await recordRepository.create({
@@ -71,7 +83,9 @@ export class StudyRecordService {
                     await this.recalculateAssessment(
                         input.studyAreaWeekId,
                         assessmentRepository,
-                        new StudyRecordRepository(client)
+                        new StudyRecordRepository(
+                            client
+                        )
                     );
 
                 if (!assessment) {
@@ -86,9 +100,14 @@ export class StudyRecordService {
         );
     }
 
-    public async findById(id: string): Promise<StudyRecord> {
-        const record = await this.studyRecordRepository
-                .findById(id);
+    public async findById(
+        id: string
+    ): Promise<StudyRecord> {
+        const record =
+            await this.studyRecordRepository
+                .findById(
+                    id
+                );
 
         if (!record) {
             throw new EntityNotFoundError(
@@ -100,22 +119,44 @@ export class StudyRecordService {
         return record;
     }
 
-    public async findByStudyAreaWeekId(studyAreaWeekId: string): Promise<StudyRecord[]> {
-        await this.ensureStudyAreaWeek(studyAreaWeekId);
-        return this.studyRecordRepository.findByStudyAreaWeekId(studyAreaWeekId);
+    public async findByStudyAreaWeekId(
+        studyAreaWeekId: string
+    ): Promise<StudyRecord[]> {
+        await this.ensureStudyAreaWeek(
+            studyAreaWeekId
+        );
+
+        return this.studyRecordRepository
+            .findByStudyAreaWeekId(
+                studyAreaWeekId
+            );
     }
 
-    public async removeLatest(studyAreaWeekId: string): Promise<StudyRecord> {
-        const studyAreaWeek = await this.studyAreaWeekRepository
-                .findById(studyAreaWeekId);
+    public async removeLatest(
+        studyAreaWeekId: string
+    ): Promise<StudyRecord> {
+        const studyAreaWeek =
+            await this.studyAreaWeekRepository
+                .findById(
+                    studyAreaWeekId
+                );
 
         if (!studyAreaWeek) {
-            throw new EntityNotFoundError('StudyAreaWeek', studyAreaWeekId);
+            throw new EntityNotFoundError(
+                'StudyAreaWeek',
+                studyAreaWeekId
+            );
         }
 
-        const currentWeekStart = getCurrentWeekStartDate(this.nowProvider());
+        const currentWeekStart =
+            getCurrentWeekStartDate(
+                this.nowProvider()
+            );
 
-        if (studyAreaWeek.weekStartDate !== currentWeekStart) {
+        if (
+            studyAreaWeek.weekStartDate !==
+            currentWeekStart
+        ) {
             throw new BusinessRuleError(
                 'Study records can only be removed from the current week.',
                 'STUDY_RECORD_WEEK_CONFLICT',
@@ -226,17 +267,22 @@ export class StudyRecordService {
     }
 
     private validateDate(value: string): void {
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(value)
-        ) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
             throw new ValidationError(
                 'Date must use YYYY-MM-DD format.',
                 'INVALID_DATE'
             );
         }
 
-        const parsed = new Date(`${value}T00:00:00Z`);
+        const [year, month, day] = value.split('-').map(Number);
+        const parsed = new Date(Date.UTC(year, month - 1, day));
+        const isInvalid =
+            Number.isNaN(parsed.getTime()) ||
+            parsed.getUTCFullYear() !== year ||
+            parsed.getUTCMonth() !== month - 1 ||
+            parsed.getUTCDate() !== day;
 
-        if (Number.isNaN(parsed.getTime())) {
+        if (isInvalid) {
             throw new ValidationError(
                 'Date is invalid.',
                 'INVALID_DATE'

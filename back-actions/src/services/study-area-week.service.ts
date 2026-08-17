@@ -379,16 +379,17 @@ export class StudyAreaWeekService {
             );
         }
 
-        const parsed =
-            new Date(
-                `${value}T00:00:00Z`
-            );
+        const [year, month, day] = value.split('-').map(Number);
 
-        if (
-            Number.isNaN(
-                parsed.getTime()
-            )
-        ) {
+        const parsed = new Date(Date.UTC(year, month - 1, day));
+
+        const isInvalid =
+            Number.isNaN(parsed.getTime()) ||
+            parsed.getUTCFullYear() !== year ||
+            parsed.getUTCMonth() !== month - 1 ||
+            parsed.getUTCDate() !== day;
+
+        if (isInvalid) {
             throw new ValidationError(
                 'Date is invalid.',
                 'INVALID_DATE'
