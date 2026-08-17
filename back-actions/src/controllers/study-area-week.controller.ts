@@ -1,19 +1,7 @@
 import type { Request, Response } from 'express';
 import { sendControllerError } from './errors/controller-error-response.js';
 import { StudyAreaWeekService } from '../services/study-area-week.service.js';
-
-interface StudyAreaWeekIdParams {
-    id: string;
-}
-
-interface StudyAreaWeekAreaAndWeekParams {
-    studyAreaId: string;
-    weekStartDate: string;
-}
-
-interface StudyAreaWeekDateParams {
-    weekStartDate: string;
-}
+import type { StudyAreaWeekIdParams, StudyAreaWeekAreaAndWeekParams, StudyAreaWeekDateParams } from '../http/route-params.js';
 
 export class StudyAreaWeekController {
     public constructor(private readonly service: StudyAreaWeekService) { }
@@ -29,10 +17,8 @@ export class StudyAreaWeekController {
 
     public getByAreaAndWeek = async (request: Request<StudyAreaWeekAreaAndWeekParams>, response: Response): Promise<void> => {
         try {
-            const studyAreaWeek = await this.service.findByAreaAndWeek(
-                request.params.studyAreaId,
-                request.params.weekStartDate
-            );
+            const studyAreaWeek = await this.service.findByAreaAndWeek
+                (request.params.studyAreaId, request.params.weekStartDate);
 
             if (!studyAreaWeek) {
                 response.status(404).json({

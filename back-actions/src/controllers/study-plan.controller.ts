@@ -1,10 +1,7 @@
 import type { Request, Response } from 'express';
 import { sendControllerError } from './errors/controller-error-response.js';
 import { StudyPlanService } from '../services/study-plan.service.js';
-
-interface StudyPlanIdParams {
-    id: string;
-}
+import type { StudyPlanIdParams } from '../http/route-params.js';
 
 export class StudyPlanController {
     public constructor(private readonly service: StudyPlanService) { }

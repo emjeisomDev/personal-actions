@@ -1,17 +1,9 @@
 import type { Request, Response } from 'express';
 import { sendControllerError } from './errors/controller-error-response.js';
 import { StudyRecordService } from '../services/study-record.service.js';
-
-interface StudyRecordIdParams {
-    id: string;
-}
-
-interface StudyRecordStudyAreaWeekParams {
-    studyAreaWeekId: string;
-}
+import type { StudyRecordIdParams, StudyRecordStudyAreaWeekParams } from '../http/route-params.js';
 
 export class StudyRecordController {
-
     public constructor(private readonly service: StudyRecordService) { }
 
     public getById = async (request: Request<StudyRecordIdParams>, response: Response): Promise<void> => {

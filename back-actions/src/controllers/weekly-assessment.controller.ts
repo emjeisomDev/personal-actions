@@ -1,14 +1,10 @@
 import type { Request, Response } from 'express';
 import { sendControllerError } from './errors/controller-error-response.js';
 import { WeeklyAssessmentService } from '../services/weekly-assessment.service.js';
-
-interface WeeklyAssessmentStudyAreaWeekParams {
-    studyAreaWeekId: string;
-}
+import type { WeeklyAssessmentStudyAreaWeekParams } from '../http/route-params.js';
 
 export class WeeklyAssessmentController {
-    public constructor(private readonly service: WeeklyAssessmentService) 
-    { }
+    public constructor(private readonly service: WeeklyAssessmentService) { }
 
     public getByStudyAreaWeek = async (request: Request<WeeklyAssessmentStudyAreaWeekParams>, response: Response): Promise<void> => {
         try {
