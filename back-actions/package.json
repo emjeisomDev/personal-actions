@@ -11,6 +11,8 @@
     "start": "node dist/server.js",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:integration:watch": "vitest --config vitest.integration.config.ts",
     "typecheck": "tsc --noEmit",
     "db:migrate": "node-pg-migrate up",
     "db:migrate:down": "node-pg-migrate down",
