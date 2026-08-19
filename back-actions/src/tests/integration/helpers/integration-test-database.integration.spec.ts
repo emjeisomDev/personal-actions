@@ -1,16 +1,22 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
+    cleanIntegrationDatabase,
     closeIntegrationDatabase,
     integrationDatabasePool,
     migrateIntegrationDatabase
 } from './integration-test-database.js';
 
-describe(
-    'Integration PostgreSQL infrastructure',
+describe('Integration PostgreSQL infrastructure',
     () => {
         beforeAll(
             async () => {
                 await migrateIntegrationDatabase();
+            }
+        );
+
+        beforeEach(
+            async () => {
+                await cleanIntegrationDatabase();
             }
         );
 
@@ -20,14 +26,48 @@ describe(
             }
         );
 
+        it('deve iniciar cada teste com o banco de domínio limpo',
+            async () => {
+                const result =
+                    await integrationDatabasePool.query<{
+                        table_name: string;
+                        row_count: string;
+                    }>(
+                        `
+                        SELECT
+                            table_name,
+                            (
+                                SELECT COUNT(*)
+                                FROM public.study_area
+                            ) AS row_count
+                        FROM information_schema.tables
+                        WHERE table_schema = 'public'
+                            AND table_name = 'study_area'
+                        `
+                    );
+
+                expect(
+                    result.rows[0]?.table_name
+                ).toBe('study_area');
+
+                expect(
+                    result.rows[0]?.row_count
+                ).toBe('0');
+            }
+        );
+
         it('deve conectar ao PostgreSQL de integração',
             async () => {
                 const result =
                     await integrationDatabasePool.query<{
                         connected: number;
-                    }>('SELECT 1 AS connected');
+                    }>(
+                        'SELECT 1 AS connected'
+                    );
 
-                expect(result.rows[0]?.connected).toBe(1);
+                expect(
+                    result.rows[0]?.connected
+                ).toBe(1);
             }
         );
 
@@ -42,24 +82,24 @@ describe(
                         FROM information_schema.tables
                         WHERE table_schema = 'public'
                             AND table_name IN (
-                            'study_area',
-                            'study_plan',
-                            'study_area_week',
-                            'study_record',
-                            'weekly_assessment'
+                                'study_area',
+                                'study_plan',
+                                'study_area_week',
+                                'study_record',
+                                'weekly_assessment'
                             )
                         ORDER BY table_name
                         `
                     );
 
-                expect(result.rows.map(row => row.table_name)
-                ).toEqual([
-                    'study_area',
-                    'study_area_week',
-                    'study_plan',
-                    'study_record',
-                    'weekly_assessment'
-                ]);
+                expect(result.rows.map(row => row.table_name))
+                    .toEqual([
+                        'study_area',
+                        'study_area_week',
+                        'study_plan',
+                        'study_record',
+                        'weekly_assessment'
+                    ]);
             }
         );
 
@@ -75,9 +115,10 @@ describe(
                         WHERE table_schema = 'public'
                             AND table_name = 'study_plan'
                             AND constraint_name =
-                            'study_plan_coefficient_positive_check'
+                                'study_plan_coefficient_positive_check'
                         `
                     );
+
                 expect(result.rows).toHaveLength(1);
             }
         );
@@ -92,7 +133,8 @@ describe(
                         VALUES
                             ('Integration invalid', 0, 'active')
                         `
-                    )).rejects.toThrow();
+                    ))
+                    .rejects.toThrow();
             }
         );
     }

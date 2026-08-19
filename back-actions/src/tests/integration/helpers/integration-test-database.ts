@@ -9,6 +9,14 @@ const projectRoot = path.resolve(currentDirectory, '../../../..');
 const migrationsDirectory = path.join(projectRoot, 'migrations');
 const migrationTable = 'pgmigrations_integration';
 
+const integrationTables = [
+    'weekly_assessment',
+    'study_record',
+    'study_area_week',
+    'study_plan',
+    'study_area'
+] as const;
+
 function getDatabaseUrl(): string {
     const databaseUrl = process.env['DATABASE_URL_TEST'];
 
@@ -45,16 +53,14 @@ export async function migrateIntegrationDatabase(): Promise<void> {
 
 export async function cleanIntegrationDatabase(): Promise<void> {
     const client = await integrationDatabasePool.connect();
+    const tables = integrationTables.join(', ');
 
     try {
         await client.query('BEGIN');
+
         await client.query(`
             TRUNCATE TABLE
-                weekly_assessment,
-                study_record,
-                study_area_week,
-                study_plan,
-                study_area
+                ${tables}
             RESTART IDENTITY CASCADE
         `);
         await client.query('COMMIT');
