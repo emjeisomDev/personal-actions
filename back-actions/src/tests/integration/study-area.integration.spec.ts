@@ -1,14 +1,8 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { PoolClient } from 'pg';
 import { StudyAreaRepository } from '../../repositories/study-area.repository.js';
 import { StudyAreaService } from '../../services/study-area.service.js';
-
-import {
-    cleanIntegrationDatabase,
-    closeIntegrationDatabase,
-    integrationDatabasePool,
-    migrateIntegrationDatabase
-} from './helpers/integration-test-database.js';
+import { cleanIntegrationDatabase, integrationDatabasePool } from './helpers/integration-test-database.js';
 
 let databaseClient: PoolClient;
 
@@ -21,12 +15,6 @@ function createStudyAreaService(): StudyAreaService {
 describe(
     'StudyArea integration',
     () => {
-        beforeAll(
-            async () => {
-                await migrateIntegrationDatabase();
-            }
-        );
-
         beforeEach(
             async () => {
                 await cleanIntegrationDatabase();
@@ -39,12 +27,6 @@ describe(
         afterEach(
             async () => {
                 databaseClient.release();
-            }
-        );
-
-        afterAll(
-            async () => {
-                await closeIntegrationDatabase();
             }
         );
 
@@ -72,7 +54,7 @@ describe(
                     .toBe(600);
 
                 const databaseResult =
-                    await integrationDatabasePool.query<{
+                    await databaseClient.query<{
                         id: string;
                         name: string;
                         weekly_goal_minutes: number;
@@ -184,7 +166,7 @@ describe(
                     });
 
                 const databaseResult =
-                    await integrationDatabasePool.query<{
+                    await databaseClient.query<{
                         name: string;
                         weekly_goal_minutes: number;
                     }>(
@@ -225,7 +207,7 @@ describe(
                 );
 
                 const databaseResult =
-                    await integrationDatabasePool.query(
+                    await databaseClient.query(
                         `
                         SELECT id
                         FROM study_area
@@ -255,7 +237,7 @@ describe(
                 );
 
                 const databaseResult =
-                    await integrationDatabasePool.query<{
+                    await databaseClient.query<{
                         count: string;
                     }>(
                         `
@@ -264,8 +246,9 @@ describe(
                         `
                     );
 
-                expect(databaseResult.rows[0]?.count)
-                    .toBe('0');
+                expect(
+                    databaseResult.rows[0]?.count
+                ).toBe('0');
             }
         );
 
@@ -273,7 +256,7 @@ describe(
             'deve rejeitar diretamente no PostgreSQL weekly_goal_minutes igual a zero',
             async () => {
                 await expect(
-                    integrationDatabasePool.query(
+                    databaseClient.query(
                         `
                         INSERT INTO study_area (
                             name,
@@ -288,7 +271,7 @@ describe(
                 ).rejects.toThrow();
 
                 const databaseResult =
-                    await integrationDatabasePool.query<{
+                    await databaseClient.query<{
                         count: string;
                     }>(
                         `
@@ -297,8 +280,9 @@ describe(
                         `
                     );
 
-                expect(databaseResult.rows[0]?.count)
-                    .toBe('0');
+                expect(
+                    databaseResult.rows[0]?.count
+                ).toBe('0');
             }
         );
     }

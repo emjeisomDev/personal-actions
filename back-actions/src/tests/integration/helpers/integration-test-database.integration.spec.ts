@@ -1,32 +1,26 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import {
+    beforeEach,
+    describe,
+    expect,
+    it
+} from 'vitest';
+
 import {
     cleanIntegrationDatabase,
-    closeIntegrationDatabase,
-    integrationDatabasePool,
-    migrateIntegrationDatabase
+    integrationDatabasePool
 } from './integration-test-database.js';
 
-describe('Integration PostgreSQL infrastructure',
+describe(
+    'Integration PostgreSQL infrastructure',
     () => {
-        beforeAll(
-            async () => {
-                await migrateIntegrationDatabase();
-            }
-        );
-
         beforeEach(
             async () => {
                 await cleanIntegrationDatabase();
             }
         );
 
-        afterAll(
-            async () => {
-                await closeIntegrationDatabase();
-            }
-        );
-
-        it('deve iniciar cada teste com o banco de domínio limpo',
+        it(
+            'deve iniciar cada teste com o banco de domínio limpo',
             async () => {
                 const result =
                     await integrationDatabasePool.query<{
@@ -56,7 +50,8 @@ describe('Integration PostgreSQL infrastructure',
             }
         );
 
-        it('deve conectar ao PostgreSQL de integração',
+        it(
+            'deve conectar ao PostgreSQL de integração',
             async () => {
                 const result =
                     await integrationDatabasePool.query<{
@@ -71,7 +66,8 @@ describe('Integration PostgreSQL infrastructure',
             }
         );
 
-        it('deve possuir todas as tabelas do domínio',
+        it(
+            'deve possuir todas as tabelas do domínio',
             async () => {
                 const result =
                     await integrationDatabasePool.query<{
@@ -92,18 +88,22 @@ describe('Integration PostgreSQL infrastructure',
                         `
                     );
 
-                expect(result.rows.map(row => row.table_name))
-                    .toEqual([
-                        'study_area',
-                        'study_area_week',
-                        'study_plan',
-                        'study_record',
-                        'weekly_assessment'
-                    ]);
+                expect(
+                    result.rows.map(
+                        row => row.table_name
+                    )
+                ).toEqual([
+                    'study_area',
+                    'study_area_week',
+                    'study_plan',
+                    'study_record',
+                    'weekly_assessment'
+                ]);
             }
         );
 
-        it('deve possuir a constraint de coefficient positivo',
+        it(
+            'deve possuir a constraint de coefficient positivo',
             async () => {
                 const result =
                     await integrationDatabasePool.query<{
@@ -119,11 +119,14 @@ describe('Integration PostgreSQL infrastructure',
                         `
                     );
 
-                expect(result.rows).toHaveLength(1);
+                expect(
+                    result.rows
+                ).toHaveLength(1);
             }
         );
 
-        it('deve rejeitar coefficient menor ou igual a zero',
+        it(
+            'deve rejeitar coefficient menor ou igual a zero',
             async () => {
                 await expect(
                     integrationDatabasePool.query(
@@ -131,10 +134,14 @@ describe('Integration PostgreSQL infrastructure',
                         INSERT INTO study_plan
                             (name, coefficient, status)
                         VALUES
-                            ('Integration invalid', 0, 'active')
+                            (
+                                'Integration invalid',
+                                0,
+                                'active'
+                            )
                         `
-                    ))
-                    .rejects.toThrow();
+                    )
+                ).rejects.toThrow();
             }
         );
     }

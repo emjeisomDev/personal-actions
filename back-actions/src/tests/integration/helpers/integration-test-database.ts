@@ -1,7 +1,12 @@
+import dotenv from 'dotenv';
 import { Pool } from 'pg';
 import { runner } from 'node-pg-migrate';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+dotenv.config({
+    path: '.env.test'
+});
 
 const currentFilePath = fileURLToPath(import.meta.url);
 const currentDirectory = path.dirname(currentFilePath);
@@ -41,14 +46,33 @@ export const integrationDatabasePool =
         connectionTimeoutMillis: 5_000
     });
 
+let migrationsCompleted = false;
+let migrationPromise: Promise<void> | undefined;
+
 export async function migrateIntegrationDatabase(): Promise<void> {
-    await runner({
+    if (migrationsCompleted) {
+        return;
+    }
+
+    if (migrationPromise) {
+        return migrationPromise;
+    }
+
+    migrationPromise = runner({
         databaseUrl,
         dir: migrationsDirectory,
         direction: 'up',
         migrationsTable: migrationTable,
         count: Infinity
-    });
+    })
+        .then(() => {
+            migrationsCompleted = true;
+        })
+        .finally(() => {
+            migrationPromise = undefined;
+        });
+
+    return migrationPromise;
 }
 
 export async function cleanIntegrationDatabase(): Promise<void> {
@@ -57,12 +81,7 @@ export async function cleanIntegrationDatabase(): Promise<void> {
 
     try {
         await client.query('BEGIN');
-
-        await client.query(`
-            TRUNCATE TABLE
-                ${tables}
-            RESTART IDENTITY CASCADE
-        `);
+        await client.query(`TRUNCATE TABLE ${tables} RESTART IDENTITY CASCADE`);
         await client.query('COMMIT');
     } catch (error) {
         await client.query('ROLLBACK');
@@ -74,4 +93,6 @@ export async function cleanIntegrationDatabase(): Promise<void> {
 
 export async function closeIntegrationDatabase(): Promise<void> {
     await integrationDatabasePool.end();
+    migrationsCompleted = false;
+    migrationPromise = undefined;
 }
