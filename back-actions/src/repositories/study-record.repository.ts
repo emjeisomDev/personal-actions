@@ -24,10 +24,10 @@ export class StudyRecordRepository {
 
     public async findById(id: string): Promise<StudyRecord | null> {
         const result = await this.database.query<StudyRecordRow>(
-        `
+            `
             SELECT
                 id,
-                date,
+                date::text AS date,
                 minutes,
                 created_at,
                 study_area_week_id
@@ -42,16 +42,19 @@ export class StudyRecordRepository {
 
     public async findByStudyAreaWeekId(studyAreaWeekId: string): Promise<StudyRecord[]> {
         const result = await this.database.query<StudyRecordRow>(
-        `
-        SELECT
-            id,
-            date,
-            minutes,
-            created_at,
-            study_area_week_id
-        FROM study_record
-        WHERE study_area_week_id = $1
-        ORDER BY date ASC, created_at ASC, id ASC
+            `
+            SELECT
+                id,
+                date::text AS date,
+                minutes,
+                created_at,
+                study_area_week_id
+            FROM study_record
+            WHERE study_area_week_id = $1
+            ORDER BY
+                date ASC,
+                created_at ASC,
+                id ASC
         `,
             [studyAreaWeekId]
         );
@@ -60,27 +63,28 @@ export class StudyRecordRepository {
 
     public async findLatestByStudyAreaWeekId(studyAreaWeekId: string): Promise<StudyRecord | null> {
         const result = await this.database.query<StudyRecordRow>(
-        `
+            `
             SELECT
                 id,
-                date,
+                date::text AS date,
                 minutes,
                 created_at,
                 study_area_week_id
             FROM study_record
             WHERE study_area_week_id = $1
-            ORDER BY created_at DESC, id DESC
+            ORDER BY created_at DESC, id DESC 
             LIMIT 1
         `,
             [studyAreaWeekId]
         );
+
         const row = result.rows[0];
         return row ? mapStudyRecord(row) : null;
     }
 
-    public async create(studyRecord: Pick<StudyRecord, 'date' | 'minutes' | 'studyAreaWeekId' >): Promise<StudyRecord> {
+    public async create(studyRecord: Pick<StudyRecord, 'date' | 'minutes' | 'studyAreaWeekId'>): Promise<StudyRecord> {
         const result = await this.database.query<StudyRecordRow>(
-        `
+            `
             INSERT INTO study_record (
                 date,
                 minutes,
@@ -89,7 +93,7 @@ export class StudyRecordRepository {
             VALUES ($1, $2, $3)
             RETURNING
                 id,
-                date,
+                date::text AS date,
                 minutes,
                 created_at,
                 study_area_week_id
@@ -100,7 +104,13 @@ export class StudyRecordRepository {
                 studyRecord.studyAreaWeekId
             ]
         );
-        return mapStudyRecord(result.rows[0]);
+
+        const row = result.rows[0];
+        if (!row) {
+            throw new Error('Study record was not created.');
+        }
+
+        return mapStudyRecord(row);
     }
 
     public async deleteById(id: string): Promise<boolean> {
@@ -113,7 +123,7 @@ export class StudyRecordRepository {
 
     public async deleteLatestByStudyAreaWeekId(studyAreaWeekId: string): Promise<StudyRecord | null> {
         const result = await this.database.query<StudyRecordRow>(
-        `
+            `
             DELETE FROM study_record
             WHERE id = (
                 SELECT id
@@ -124,7 +134,7 @@ export class StudyRecordRepository {
             )
             RETURNING
                 id,
-                date,
+                date::text AS date,
                 minutes,
                 created_at,
                 study_area_week_id

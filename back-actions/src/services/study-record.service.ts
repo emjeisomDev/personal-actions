@@ -32,10 +32,14 @@ export class StudyRecordService {
     public async create(
         input: CreateStudyRecordInput
     ): Promise<StudyRecord> {
-        this.validateDate(input.date);
+        this.validateDate(
+            input.date
+        );
 
         if (
-            !Number.isInteger(input.minutes) ||
+            !Number.isInteger(
+                input.minutes
+            ) ||
             input.minutes <= 0
         ) {
             throw new ValidationError(
@@ -66,13 +70,15 @@ export class StudyRecordService {
                     );
 
                 const assessmentRepository =
-                    new WeeklyAssessmentRepository(
-                        client
-                    );
+                    this.assessmentRepository
+                        .forExecutor(
+                            client
+                        );
 
                 const record =
                     await recordRepository.create({
-                        date: input.date,
+                        date:
+                            input.date,
                         minutes:
                             input.minutes,
                         studyAreaWeekId:
@@ -83,9 +89,7 @@ export class StudyRecordService {
                     await this.recalculateAssessment(
                         input.studyAreaWeekId,
                         assessmentRepository,
-                        new StudyRecordRepository(
-                            client
-                        )
+                        recordRepository
                     );
 
                 if (!assessment) {
@@ -173,9 +177,10 @@ export class StudyRecordService {
                     );
 
                 const assessmentRepository =
-                    new WeeklyAssessmentRepository(
-                        client
-                    );
+                    this.assessmentRepository
+                        .forExecutor(
+                            client
+                        );
 
                 const latest =
                     await recordRepository
@@ -243,15 +248,28 @@ export class StudyRecordService {
                     studyAreaWeekId
                 );
 
-        const minutesStudied = records.reduce((total, record) => total + record.minutes, 0);
+        const minutesStudied =
+            records.reduce(
+                (
+                    total,
+                    record
+                ) =>
+                    total +
+                    record.minutes,
+                0
+            );
 
-        const goalAchieved = minutesStudied >= assessment.weekGoal;
+        const goalAchieved =
+            minutesStudied >=
+            assessment.weekGoal;
 
         return assessmentRepository.update(
             assessment.id,
             {
-                studyAreaWeekId: assessment.studyAreaWeekId,
-                weekGoal: assessment.weekGoal,
+                studyAreaWeekId:
+                    assessment.studyAreaWeekId,
+                weekGoal:
+                    assessment.weekGoal,
                 minutesStudied,
                 goalAchieved
             }
@@ -268,10 +286,7 @@ export class StudyRecordService {
 
     private validateDate(value: string): void {
         if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-            throw new ValidationError(
-                'Date must use YYYY-MM-DD format.',
-                'INVALID_DATE'
-            );
+            throw new ValidationError('Date must use YYYY-MM-DD format.', 'INVALID_DATE');
         }
 
         const [year, month, day] = value.split('-').map(Number);
