@@ -22,5 +22,9 @@ export async function setup(): Promise<() => Promise<void>> {
 
   return async (): Promise<void> => {
     await closeIntegrationDatabase();
+
+    const { closeDatabaseConnection } = await import('../../config/database.js');
+
+    await closeDatabaseConnection();
   };
 }
