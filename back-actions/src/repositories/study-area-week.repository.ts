@@ -24,10 +24,10 @@ export class StudyAreaWeekRepository {
 
     public async findById(id: string): Promise<StudyAreaWeek | null> {
         const result = await this.database.query<StudyAreaWeekRow>(
-        `
+            `
             SELECT
                 id,
-                week_start_date,
+                week_start_date::text AS week_start_date,
                 study_area_id,
                 study_plan_id
             FROM study_area_week
@@ -41,10 +41,10 @@ export class StudyAreaWeekRepository {
 
     public async findByAreaAndWeek(studyAreaId: string, weekStartDate: string): Promise<StudyAreaWeek | null> {
         const result = await this.database.query<StudyAreaWeekRow>(
-        `
+            `
             SELECT
                 id,
-                week_start_date,
+                week_start_date::text AS week_start_date,
                 study_area_id,
                 study_plan_id
             FROM study_area_week
@@ -62,10 +62,10 @@ export class StudyAreaWeekRepository {
 
     public async findByWeekStartDate(weekStartDate: string): Promise<StudyAreaWeek[]> {
         const result = await this.database.query<StudyAreaWeekRow>(
-        `
+            `
             SELECT
                 id,
-                week_start_date,
+                week_start_date::text AS week_start_date,
                 study_area_id,
                 study_plan_id
             FROM study_area_week
@@ -80,16 +80,16 @@ export class StudyAreaWeekRepository {
 
     public async create(studyAreaWeek: Omit<StudyAreaWeek, 'id'>): Promise<StudyAreaWeek> {
         const result = await this.database.query<StudyAreaWeekRow>(
-        `
+            `
         INSERT INTO study_area_week (
-            week_start_date, 
-            study_area_id, 
+            week_start_date,
+            study_area_id,
             study_plan_id
             )
         VALUES ($1, $2, $3)
         RETURNING
             id,
-            week_start_date,
+            week_start_date::text AS week_start_date,
             study_area_id,
             study_plan_id
         `,
@@ -99,8 +99,12 @@ export class StudyAreaWeekRepository {
                 studyAreaWeek.studyPlanId
             ]
         );
-        return mapStudyAreaWeek(result.rows[0]);
+
+        const row = result.rows[0];
+        if (!row) {
+            throw new Error('StudyAreaWeek was not created.');
+        }
+
+        return mapStudyAreaWeek(row);
     }
-
-
 }
