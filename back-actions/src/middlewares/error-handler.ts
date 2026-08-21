@@ -26,7 +26,7 @@ function isJsonSyntaxError(error: unknown): error is JsonSyntaxError {
 
     const candidate = error as JsonSyntaxError;
 
-    return candidate.type === 'entity.parse.failed';
+    return (candidate.type === 'entity.parse.failed');
 }
 
 function createErrorResponse(error: unknown): {
@@ -94,21 +94,21 @@ function createErrorResponse(error: unknown): {
     };
 }
 
-function logUnexpectedError(
-    request: Request,
-    error: unknown
-): void {
-    if (
+function isExpectedApplicationError(error: unknown): boolean {
+    return (
         error instanceof ValidationError ||
         error instanceof EntityNotFoundError ||
         error instanceof BusinessRuleError ||
         isJsonSyntaxError(error)
-    ) {
+    );
+}
+
+function logUnexpectedError(request: Request, error: unknown): void {
+    if (isExpectedApplicationError(error)) {
         return;
     }
 
-    console.error(
-        'Unhandled application error.',
+    console.error('Unhandled application error.',
         {
             method: request.method,
             path: request.originalUrl,
@@ -123,18 +123,14 @@ export const globalErrorHandler:
         error,
         request,
         response,
-        _next
+        next
     ): void => {
         if (response.headersSent) {
+            next(error);
             return;
         }
 
-        logUnexpectedError(
-            request,
-            error
-        );
-
+        logUnexpectedError(request, error);
         const result = createErrorResponse(error);
-
         response.status(result.statusCode).json(result.body);
     };
