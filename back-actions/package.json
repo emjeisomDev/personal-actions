@@ -5,11 +5,15 @@
   "private": true,
   "type": "module",
   "main": "dist/server.js",
+  "engines": {
+    "node": ">=20.11.0"
+  },
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "clean": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\"",
     "build": "npm run clean && tsc",
     "start": "npm run db:migrate && node dist/server.js",
+    "start:production": "node dist/server.js",
     "test": "vitest run --exclude src/tests/integration/**/*.integration.spec.ts",
     "test:watch": "vitest",
     "test:integration": "vitest run --config vitest.integration.config.ts",
