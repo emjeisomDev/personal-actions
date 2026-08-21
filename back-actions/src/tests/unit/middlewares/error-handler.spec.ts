@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Request, Response } from 'express';
 import { globalErrorHandler } from '../../../middlewares/error-handler.js';
 import { ValidationError } from '../../../services/errors/validation.error.js';
@@ -45,8 +45,14 @@ function createResponse(
 describe(
     'globalErrorHandler',
     () => {
+        afterEach(
+            () => {
+                vi.restoreAllMocks();
+            }
+        );
+
         it(
-            'deve responder 422 para ValidationError',
+            'deve responder 422 para ValidationError preservando code e message',
             () => {
                 const {
                     response,
@@ -56,6 +62,14 @@ describe(
 
                 const next =
                     vi.fn();
+
+                const consoleErrorSpy =
+                    vi.spyOn(
+                        console,
+                        'error'
+                    ).mockImplementation(
+                        () => undefined
+                    );
 
                 const error =
                     new ValidationError(
@@ -90,11 +104,14 @@ describe(
                 expect(
                     next
                 ).not.toHaveBeenCalled();
+
+                expect(
+                    consoleErrorSpy
+                ).not.toHaveBeenCalled();
             }
         );
 
-        it(
-            'deve responder 404 para EntityNotFoundError',
+        it('deve responder 404 para EntityNotFoundError com entity e id',
             () => {
                 const {
                     response,
@@ -104,6 +121,14 @@ describe(
 
                 const next =
                     vi.fn();
+
+                const consoleErrorSpy =
+                    vi.spyOn(
+                        console,
+                        'error'
+                    ).mockImplementation(
+                        () => undefined
+                    );
 
                 const error =
                     new EntityNotFoundError(
@@ -142,11 +167,15 @@ describe(
                 expect(
                     next
                 ).not.toHaveBeenCalled();
+
+                expect(
+                    consoleErrorSpy
+                ).not.toHaveBeenCalled();
             }
         );
 
         it(
-            'deve responder com o status do BusinessRuleError',
+            'deve responder 409 para BusinessRuleError quando nenhum status customizado for informado',
             () => {
                 const {
                     response,
@@ -157,11 +186,18 @@ describe(
                 const next =
                     vi.fn();
 
+                const consoleErrorSpy =
+                    vi.spyOn(
+                        console,
+                        'error'
+                    ).mockImplementation(
+                        () => undefined
+                    );
+
                 const error =
                     new BusinessRuleError(
                         'Business rule violated.',
-                        'BUSINESS_RULE_VIOLATION',
-                        409
+                        'BUSINESS_RULE_VIOLATION'
                     );
 
                 globalErrorHandler(
@@ -191,6 +227,59 @@ describe(
                 expect(
                     next
                 ).not.toHaveBeenCalled();
+
+                expect(
+                    consoleErrorSpy
+                ).not.toHaveBeenCalled();
+            }
+        );
+
+        it(
+            'deve respeitar status customizado do BusinessRuleError',
+            () => {
+                const {
+                    response,
+                    status,
+                    json
+                } = createResponse();
+
+                const next =
+                    vi.fn();
+
+                const error =
+                    new BusinessRuleError(
+                        'Conflict with current state.',
+                        'STATE_CONFLICT',
+                        422
+                    );
+
+                globalErrorHandler(
+                    error,
+                    createRequest(),
+                    response,
+                    next
+                );
+
+                expect(
+                    status
+                ).toHaveBeenCalledWith(
+                    422
+                );
+
+                expect(
+                    json
+                ).toHaveBeenCalledWith({
+                    error: {
+                        code:
+                            'STATE_CONFLICT',
+                        message:
+                            'Conflict with current state.'
+                    }
+                });
+
+                expect(
+                    next
+                ).not.toHaveBeenCalled();
             }
         );
 
@@ -205,6 +294,14 @@ describe(
 
                 const next =
                     vi.fn();
+
+                const consoleErrorSpy =
+                    vi.spyOn(
+                        console,
+                        'error'
+                    ).mockImplementation(
+                        () => undefined
+                    );
 
                 const error =
                     Object.assign(
@@ -244,11 +341,15 @@ describe(
                 expect(
                     next
                 ).not.toHaveBeenCalled();
+
+                expect(
+                    consoleErrorSpy
+                ).not.toHaveBeenCalled();
             }
         );
 
         it(
-            'deve responder 500 para erro desconhecido',
+            'não deve tratar SyntaxError comum como JSON inválido',
             () => {
                 const {
                     response,
@@ -258,6 +359,87 @@ describe(
 
                 const next =
                     vi.fn();
+
+                const consoleErrorSpy =
+                    vi.spyOn(
+                        console,
+                        'error'
+                    ).mockImplementation(
+                        () => undefined
+                    );
+
+                const error =
+                    new SyntaxError(
+                        'Unexpected token'
+                    );
+
+                globalErrorHandler(
+                    error,
+                    createRequest(),
+                    response,
+                    next
+                );
+
+                expect(
+                    status
+                ).toHaveBeenCalledWith(
+                    500
+                );
+
+                expect(
+                    json
+                ).toHaveBeenCalledWith({
+                    error: {
+                        code:
+                            'INTERNAL_SERVER_ERROR',
+                        message:
+                            'An unexpected error occurred.'
+                    }
+                });
+
+                expect(
+                    json
+                ).not.toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        error:
+                            expect.objectContaining({
+                                message:
+                                    'Unexpected token'
+                            })
+                    })
+                );
+
+                expect(
+                    next
+                ).not.toHaveBeenCalled();
+
+                expect(
+                    consoleErrorSpy
+                ).toHaveBeenCalledTimes(
+                    1
+                );
+            }
+        );
+
+        it(
+            'deve responder 500 para erro desconhecido sem expor detalhes internos',
+            () => {
+                const {
+                    response,
+                    status,
+                    json
+                } = createResponse();
+
+                const next =
+                    vi.fn();
+
+                const consoleErrorSpy =
+                    vi.spyOn(
+                        console,
+                        'error'
+                    ).mockImplementation(
+                        () => undefined
+                    );
 
                 const error =
                     new Error(
@@ -299,6 +481,29 @@ describe(
                             })
                     })
                 );
+
+                expect(
+                    next
+                ).not.toHaveBeenCalled();
+
+                expect(
+                    consoleErrorSpy
+                ).toHaveBeenCalledTimes(
+                    1
+                );
+
+                expect(
+                    consoleErrorSpy
+                ).toHaveBeenCalledWith(
+                    'Unhandled application error.',
+                    expect.objectContaining({
+                        method:
+                            'GET',
+                        path:
+                            '/api/test',
+                        error
+                    })
+                );
             }
         );
 
@@ -315,6 +520,14 @@ describe(
 
                 const next =
                     vi.fn();
+
+                const consoleErrorSpy =
+                    vi.spyOn(
+                        console,
+                        'error'
+                    ).mockImplementation(
+                        () => undefined
+                    );
 
                 const error =
                     new Error(
@@ -346,6 +559,10 @@ describe(
 
                 expect(
                     json
+                ).not.toHaveBeenCalled();
+
+                expect(
+                    consoleErrorSpy
                 ).not.toHaveBeenCalled();
             }
         );
