@@ -2,7 +2,10 @@ import express from 'express';
 import cors from 'cors';
 import type { Pool } from 'pg';
 
-import { databasePool, checkDatabaseConnection } from './config/database.js';
+import {
+  databasePool,
+  checkDatabaseConnection
+} from './config/database.js';
 
 import { environment } from './config/environment.js';
 
@@ -26,6 +29,9 @@ import { WeeklyAssessmentController } from './controllers/weekly-assessment.cont
 
 import { createApiRouter } from './routes/api.routes.js';
 
+import { notFoundHandler } from './middlewares/not-found-handler.js';
+import { globalErrorHandler } from './middlewares/error-handler.js';
+
 export interface AppControllers {
   studyAreaController: StudyAreaController;
   studyPlanController: StudyPlanController;
@@ -35,40 +41,13 @@ export interface AppControllers {
 }
 
 export function createApp(pool: Pool = databasePool): express.Express {
-  const studyAreaRepository =
-    new StudyAreaRepository(
-      pool
-    );
-
-  const studyPlanRepository =
-    new StudyPlanRepository(
-      pool
-    );
-
-  const studyAreaWeekRepository =
-    new StudyAreaWeekRepository(
-      pool
-    );
-
-  const studyRecordRepository =
-    new StudyRecordRepository(
-      pool
-    );
-
-  const weeklyAssessmentRepository =
-    new WeeklyAssessmentRepository(
-      pool
-    );
-
-  const studyAreaService =
-    new StudyAreaService(
-      studyAreaRepository
-    );
-
-  const studyPlanService =
-    new StudyPlanService(
-      studyPlanRepository
-    );
+  const studyAreaRepository = new StudyAreaRepository(pool);
+  const studyPlanRepository = new StudyPlanRepository(pool);
+  const studyAreaWeekRepository = new StudyAreaWeekRepository(pool);
+  const studyRecordRepository = new StudyRecordRepository(pool);
+  const weeklyAssessmentRepository = new WeeklyAssessmentRepository(pool);
+  const studyAreaService = new StudyAreaService(studyAreaRepository);
+  const studyPlanService = new StudyPlanService(studyPlanRepository);
 
   const studyAreaWeekService =
     new StudyAreaWeekService(
@@ -87,52 +66,83 @@ export function createApp(pool: Pool = databasePool): express.Express {
       weeklyAssessmentRepository
     );
 
-  const weeklyAssessmentService = new WeeklyAssessmentService(weeklyAssessmentRepository, studyAreaWeekRepository);
+  const weeklyAssessmentService =
+    new WeeklyAssessmentService(
+      weeklyAssessmentRepository,
+      studyAreaWeekRepository
+    );
 
-  const studyAreaController = new StudyAreaController(studyAreaService);
+  const studyAreaController =
+    new StudyAreaController(
+      studyAreaService
+    );
 
-  const studyPlanController = new StudyPlanController(studyPlanService);
+  const studyPlanController =
+    new StudyPlanController(
+      studyPlanService
+    );
 
-  const studyAreaWeekController = new StudyAreaWeekController(studyAreaWeekService);
+  const studyAreaWeekController =
+    new StudyAreaWeekController(
+      studyAreaWeekService
+    );
 
-  const studyRecordController = new StudyRecordController(studyRecordService);
+  const studyRecordController =
+    new StudyRecordController(
+      studyRecordService
+    );
 
-  const weeklyAssessmentController = new WeeklyAssessmentController(weeklyAssessmentService);
+  const weeklyAssessmentController =
+    new WeeklyAssessmentController(
+      weeklyAssessmentService
+    );
 
   const application = express();
 
   application.use(
-    cors({ origin: environment.corsOrigin })
+    cors({
+      origin:
+        environment.corsOrigin
+    })
   );
 
   application.use(express.json());
 
   application.get(
     '/health',
-    async (_request, response) => {
+    async (
+      _request,
+      response
+    ) => {
       try {
+
         await checkDatabaseConnection();
-
-        response.status(200).json({
-          status: 'ok',
-          service: 'back-actions',
-          environment: environment.nodeEnv,
-          database: 'connected'
-        });
+        response
+          .status(200)
+          .json({
+            status: 'ok',
+            service: 'back-actions',
+            environment: environment.nodeEnv,
+            database: 'connected'
+          });
+          
       } catch (error) {
-        console.error('Health check failed.', error);
 
-        response.status(503).json({
-          status: 'error',
-          service: 'back-actions',
-          environment: environment.nodeEnv,
-          database: 'unavailable'
-        });
+        console.error('Health check failed.', error);
+        response
+          .status(503)
+          .json({
+            status: 'error',
+            service: 'back-actions',
+            environment: environment.nodeEnv,
+            database: 'unavailable'
+          });
       }
     }
   );
 
-  const controllers: AppControllers = {
+  const controllers:
+    AppControllers = {
     studyAreaController,
     studyPlanController,
     studyAreaWeekController,
@@ -140,10 +150,24 @@ export function createApp(pool: Pool = databasePool): express.Express {
     weeklyAssessmentController
   };
 
-  application.use(
-    '/api',
-    createApiRouter(controllers)
-  );
+  application.use('/api', createApiRouter(controllers));
+
+  /*
+   * Todas as rotas são registradas antes
+   * dos middlewares finais.
+   *
+   * A ordem é obrigatória:
+   *
+   * routes
+   *   ↓
+   * notFoundHandler
+   *   ↓
+   * globalErrorHandler
+   */
+  application.use(notFoundHandler);
+
+  application.use(globalErrorHandler);
+
   return application;
 }
 

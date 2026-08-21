@@ -15,15 +15,10 @@ describe('WeeklyAssessmentController', () => {
 
         const service = {
             findByStudyAreaWeekId:
-                vi.fn().mockResolvedValue(
-                    assessment
-                )
+                vi.fn().mockResolvedValue(assessment)
         };
 
-        const controller =
-            new WeeklyAssessmentController(
-                service as never
-            );
+        const controller = new WeeklyAssessmentController(service as never);
 
         const {
             response,
@@ -31,29 +26,24 @@ describe('WeeklyAssessmentController', () => {
             json
         } = createMockResponse();
 
+        const next = vi.fn();
+
         await controller.getByStudyAreaWeek(
             createMockRequest({
                 studyAreaWeekId: 'week-1'
             }),
-            response
+            response,
+            next
         );
 
-        expect(
-            service.findByStudyAreaWeekId
-        ).toHaveBeenCalledWith(
-            'week-1'
-        );
+        expect(service.findByStudyAreaWeekId).toHaveBeenCalledWith('week-1');
 
-        expect(status)
-            .toHaveBeenCalledWith(200);
-
-        expect(json)
-            .toHaveBeenCalledWith(
-                assessment
-            );
+        expect(status).toHaveBeenCalledWith(200);
+        expect(json).toHaveBeenCalledWith(assessment);
+        expect(next).not.toHaveBeenCalled();
     });
 
-    it('deve encaminhar EntityNotFoundError como 404', async () => {
+    it('deve encaminhar EntityNotFoundError para o middleware global', async () => {
         const error =
             new EntityNotFoundError(
                 'WeeklyAssessment',
@@ -61,16 +51,10 @@ describe('WeeklyAssessmentController', () => {
             );
 
         const service = {
-            findByStudyAreaWeekId:
-                vi.fn().mockRejectedValue(
-                    error
-                )
+            findByStudyAreaWeekId: vi.fn().mockRejectedValue(error)
         };
 
-        const controller =
-            new WeeklyAssessmentController(
-                service as never
-            );
+        const controller = new WeeklyAssessmentController(service as never);
 
         const {
             response,
@@ -78,28 +62,19 @@ describe('WeeklyAssessmentController', () => {
             json
         } = createMockResponse();
 
+        const next = vi.fn();
+
         await controller.getByStudyAreaWeek(
             createMockRequest({
                 studyAreaWeekId: 'week-1'
             }),
-            response
+            response,
+            next
         );
 
-        expect(status)
-            .toHaveBeenCalledWith(404);
-
-        expect(json)
-            .toHaveBeenCalledWith({
-                error: {
-                    code:
-                        'ENTITY_NOT_FOUND',
-                    message:
-                        error.message,
-                    entity:
-                        error.entity,
-                    id:
-                        error.id
-                }
-            });
+        expect(next).toHaveBeenCalledTimes(1);
+        expect(next).toHaveBeenCalledWith(error);
+        expect(status).not.toHaveBeenCalled();
+        expect(json).not.toHaveBeenCalled();
     });
 });

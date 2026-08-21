@@ -14,16 +14,9 @@ describe('StudyPlanController', () => {
             }
         ];
 
-        const service = {
-            findAll: vi.fn().mockResolvedValue(
-                plans
-            )
-        };
+        const service = { findAll: vi.fn().mockResolvedValue(plans) };
 
-        const controller =
-            new StudyPlanController(
-                service as never
-            );
+        const controller = new StudyPlanController(service as never);
 
         const {
             response,
@@ -31,20 +24,18 @@ describe('StudyPlanController', () => {
             json
         } = createMockResponse();
 
+        const next = vi.fn();
+
         await controller.getAll(
             createMockRequest(),
-            response
+            response,
+            next
         );
 
-        expect(
-            service.findAll
-        ).toHaveBeenCalledTimes(1);
-
-        expect(status)
-            .toHaveBeenCalledWith(200);
-
-        expect(json)
-            .toHaveBeenCalledWith(plans);
+        expect(service.findAll).toHaveBeenCalledTimes(1);
+        expect(status).toHaveBeenCalledWith(200);
+        expect(json).toHaveBeenCalledWith(plans);
+        expect(next).not.toHaveBeenCalled();
     });
 
     it('deve retornar somente planos ativos', async () => {
@@ -58,15 +49,10 @@ describe('StudyPlanController', () => {
         ];
 
         const service = {
-            findActive: vi.fn().mockResolvedValue(
-                plans
-            )
+            findActive: vi.fn().mockResolvedValue(plans)
         };
 
-        const controller =
-            new StudyPlanController(
-                service as never
-            );
+        const controller = new StudyPlanController(service as never);
 
         const {
             response,
@@ -74,20 +60,14 @@ describe('StudyPlanController', () => {
             json
         } = createMockResponse();
 
-        await controller.getActive(
-            createMockRequest(),
-            response
-        );
+        const next = vi.fn();
 
-        expect(
-            service.findActive
-        ).toHaveBeenCalledTimes(1);
+        await controller.getActive(createMockRequest(), response, next);
 
-        expect(status)
-            .toHaveBeenCalledWith(200);
-
-        expect(json)
-            .toHaveBeenCalledWith(plans);
+        expect(service.findActive).toHaveBeenCalledTimes(1);
+        expect(status).toHaveBeenCalledWith(200);
+        expect(json).toHaveBeenCalledWith(plans);
+        expect(next).not.toHaveBeenCalled();
     });
 
     it('deve buscar plano pelo id', async () => {
@@ -98,16 +78,9 @@ describe('StudyPlanController', () => {
             status: 'active'
         };
 
-        const service = {
-            findById: vi.fn().mockResolvedValue(
-                plan
-            )
-        };
+        const service = { findById: vi.fn().mockResolvedValue(plan) };
 
-        const controller =
-            new StudyPlanController(
-                service as never
-            );
+        const controller = new StudyPlanController(service as never);
 
         const {
             response,
@@ -115,24 +88,20 @@ describe('StudyPlanController', () => {
             json
         } = createMockResponse();
 
+        const next = vi.fn();
+
         await controller.getById(
             createMockRequest({
                 id: 'plan-1'
             }),
-            response
+            response,
+            next
         );
 
-        expect(
-            service.findById
-        ).toHaveBeenCalledWith(
-            'plan-1'
-        );
-
-        expect(status)
-            .toHaveBeenCalledWith(200);
-
-        expect(json)
-            .toHaveBeenCalledWith(plan);
+        expect(service.findById).toHaveBeenCalledWith('plan-1');
+        expect(status).toHaveBeenCalledWith(200);
+        expect(json).toHaveBeenCalledWith(plan);
+        expect(next).not.toHaveBeenCalled();
     });
 
     it('deve criar plano com status 201', async () => {
@@ -143,22 +112,17 @@ describe('StudyPlanController', () => {
             status: 'active'
         };
 
-        const service = {
-            create: vi.fn().mockResolvedValue(
-                plan
-            )
-        };
+        const service = { create: vi.fn().mockResolvedValue(plan) };
 
-        const controller =
-            new StudyPlanController(
-                service as never
-            );
+        const controller = new StudyPlanController(service as never);
 
         const {
             response,
             status,
             json
         } = createMockResponse();
+
+        const next = vi.fn();
 
         await controller.create(
             createMockRequest(
@@ -169,47 +133,40 @@ describe('StudyPlanController', () => {
                     status: 'active'
                 }
             ),
-            response
+            response,
+            next
         );
 
-        expect(
-            service.create
-        ).toHaveBeenCalledWith({
+        expect(service.create).toHaveBeenCalledWith({
             name: 'Plano padrão',
             coefficient: 1.5,
             status: 'active'
         });
 
-        expect(status)
-            .toHaveBeenCalledWith(201);
-
-        expect(json)
-            .toHaveBeenCalledWith(plan);
+        expect(status).toHaveBeenCalledWith(201);
+        expect(json).toHaveBeenCalledWith(plan);
+        expect(next).not.toHaveBeenCalled();
     });
 
-    it('deve encaminhar ValidationError como 422', async () => {
-        const error =
-            new ValidationError(
-                'Invalid coefficient.',
-                'INVALID_COEFFICIENT'
-            );
+    it('deve encaminhar ValidationError para o middleware global', async () => {
+        const error = new ValidationError(
+            'Invalid coefficient.',
+            'INVALID_COEFFICIENT'
+        );
 
         const service = {
-            create: vi.fn().mockRejectedValue(
-                error
-            )
+            create: vi.fn().mockRejectedValue(error)
         };
 
-        const controller =
-            new StudyPlanController(
-                service as never
-            );
+        const controller = new StudyPlanController(service as never);
 
         const {
             response,
             status,
             json
         } = createMockResponse();
+
+        const next = vi.fn();
 
         await controller.create(
             createMockRequest(
@@ -220,19 +177,13 @@ describe('StudyPlanController', () => {
                     status: 'active'
                 }
             ),
-            response
+            response,
+            next
         );
 
-        expect(status)
-            .toHaveBeenCalledWith(422);
-
-        expect(json)
-            .toHaveBeenCalledWith({
-                error: {
-                    code: 'INVALID_COEFFICIENT',
-                    message:
-                        'Invalid coefficient.'
-                }
-            });
+        expect(next).toHaveBeenCalledTimes(1);
+        expect(next).toHaveBeenCalledWith(error);
+        expect(status).not.toHaveBeenCalled();
+        expect(json).not.toHaveBeenCalled();
     });
 });

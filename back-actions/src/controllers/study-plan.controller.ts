@@ -1,39 +1,50 @@
-import type { Request, Response } from 'express';
-import { sendControllerError } from './errors/controller-error-response.js';
+import type { NextFunction, Request, Response } from 'express';
 import { StudyPlanService } from '../services/study-plan.service.js';
 import type { StudyPlanIdParams } from '../http/route-params.js';
 
 export class StudyPlanController {
     public constructor(private readonly service: StudyPlanService) { }
 
-    public getAll = async (_request: Request, response: Response): Promise<void> => {
+    public getAll = async (
+        _request: Request,
+        response: Response,
+        next: NextFunction
+    ): Promise<void> => {
         try {
             const studyPlans = await this.service.findAll();
             response.status(200).json(studyPlans);
         } catch (error) {
-            sendControllerError(response, error);
+            next(error);
         }
     };
 
-    public getActive = async (_request: Request, response: Response): Promise<void> => {
+    public getActive = async (_request: Request, response: Response, next: NextFunction): Promise<void> => {
         try {
             const studyPlans = await this.service.findActive();
             response.status(200).json(studyPlans);
         } catch (error) {
-            sendControllerError(response, error);
+            next(error);
         }
     };
 
-    public getById = async (request: Request<StudyPlanIdParams>, response: Response): Promise<void> => {
+    public getById = async (
+        request: Request<StudyPlanIdParams>,
+        response: Response,
+        next: NextFunction
+    ): Promise<void> => {
         try {
             const studyPlan = await this.service.findById(request.params.id);
             response.status(200).json(studyPlan);
         } catch (error) {
-            sendControllerError(response, error);
+            next(error);
         }
     };
 
-    public create = async (request: Request, response: Response): Promise<void> => {
+    public create = async (
+        request: Request,
+        response: Response,
+        next: NextFunction
+    ): Promise<void> => {
         try {
             const studyPlan = await this.service.create({
                 name: request.body.name,
@@ -43,7 +54,7 @@ export class StudyPlanController {
 
             response.status(201).json(studyPlan);
         } catch (error) {
-            sendControllerError(response, error);
+            next(error);
         }
     };
 }
