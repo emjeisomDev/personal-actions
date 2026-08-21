@@ -7,7 +7,8 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "clean": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\"",
+    "build": "npm run clean && tsc",
     "start": "npm run db:migrate && node dist/server.js",
     "test": "vitest run --exclude src/tests/integration/**/*.integration.spec.ts",
     "test:watch": "vitest",
