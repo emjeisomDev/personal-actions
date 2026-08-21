@@ -39,6 +39,14 @@ if (nodeEnv === 'production' && (!corsOrigin || corsOrigin.length === 0)) {
   throw new Error('CORS_ORIGIN environment variable is required when NODE_ENV=production.');
 }
 
+if (corsOrigin && !/^https?:\/\/[^/\s]+$/i.test(corsOrigin)) {
+  throw new Error('CORS_ORIGIN must be a valid HTTP or HTTPS origin.');
+}
+
+if (nodeEnv === 'production' && corsOrigin?.startsWith('http://')) {
+  throw new Error('CORS_ORIGIN must use HTTPS when NODE_ENV=production.');
+}
+
 export const environment = {
   nodeEnv,
   port,

@@ -40,14 +40,96 @@ export interface AppControllers {
   weeklyAssessmentController: WeeklyAssessmentController;
 }
 
-export function createApp(pool: Pool = databasePool): express.Express {
-  const studyAreaRepository = new StudyAreaRepository(pool);
-  const studyPlanRepository = new StudyPlanRepository(pool);
-  const studyAreaWeekRepository = new StudyAreaWeekRepository(pool);
-  const studyRecordRepository = new StudyRecordRepository(pool);
-  const weeklyAssessmentRepository = new WeeklyAssessmentRepository(pool);
-  const studyAreaService = new StudyAreaService(studyAreaRepository);
-  const studyPlanService = new StudyPlanService(studyPlanRepository);
+function configureSecurityHeaders(application: express.Express): void {
+  application.disable('x-powered-by');
+
+  application.use(
+    (_request, response, next): void => {
+      response.setHeader(
+        'X-Content-Type-Options',
+        'nosniff'
+      );
+
+      response.setHeader(
+        'X-Frame-Options',
+        'DENY'
+      );
+
+      response.setHeader(
+        'Referrer-Policy',
+        'no-referrer'
+      );
+
+      response.setHeader(
+        'Permissions-Policy',
+        'camera=(), microphone=(), geolocation=()'
+      );
+
+      if (
+        environment.nodeEnv === 'production'
+      ) {
+        response.setHeader(
+          'Strict-Transport-Security',
+          'max-age=31536000; includeSubDomains'
+        );
+      }
+
+      next();
+    }
+  );
+}
+
+function configureCors(
+  application: express.Express
+): void {
+  application.use(
+    cors({
+      origin: environment.corsOrigin,
+      credentials: false,
+      methods: [
+        'GET',
+        'POST',
+        'PUT',
+        'PATCH',
+        'DELETE',
+        'OPTIONS'
+      ],
+      allowedHeaders: [
+        'Content-Type',
+        'Accept'
+      ],
+      optionsSuccessStatus: 204
+    })
+  );
+}
+
+export function createApp(
+  pool: Pool = databasePool
+): express.Express {
+  const studyAreaRepository =
+    new StudyAreaRepository(pool);
+
+  const studyPlanRepository =
+    new StudyPlanRepository(pool);
+
+  const studyAreaWeekRepository =
+    new StudyAreaWeekRepository(pool);
+
+  const studyRecordRepository =
+    new StudyRecordRepository(pool);
+
+  const weeklyAssessmentRepository =
+    new WeeklyAssessmentRepository(pool);
+
+  const studyAreaService =
+    new StudyAreaService(
+      studyAreaRepository
+    );
+
+  const studyPlanService =
+    new StudyPlanService(
+      studyPlanRepository
+    );
 
   const studyAreaWeekService =
     new StudyAreaWeekService(
@@ -99,41 +181,37 @@ export function createApp(pool: Pool = databasePool): express.Express {
 
   const application = express();
 
-  application.use(
-    cors({
-      origin:
-        environment.corsOrigin
-    })
-  );
+  configureSecurityHeaders(application);
 
-  application.use(express.json());
+  configureCors(application);
 
-  application.get(
-    '/health',
-    async (
-      _request,
+  application.use(express.json({ limit: '1mb' }));
+
+  application.get('/health', async (_request, response) => {
+    try {
+
+      await checkDatabaseConnection();
       response
-    ) => {
-      try {
-        await checkDatabaseConnection();
-        response
-          .status(200)
-          .json({
-            status: 'ok',
-            service: 'back-actions',
-            database: 'connected'
-          });
-      } catch (error) {
-        console.error('Health check failed.', error);
-        response
-          .status(503)
-          .json({
-            status: 'error',
-            service: 'back-actions',
-            database: 'unavailable'
-          });
-      }
+        .status(200)
+        .json({
+          status: 'ok',
+          service: 'back-actions',
+          environment: environment.nodeEnv,
+          database: 'connected'
+        });
+    } catch (error) {
+
+      console.error('Health check failed.', error);
+      response
+        .status(503)
+        .json({
+          status: 'error',
+          service: 'back-actions',
+          environment: environment.nodeEnv,
+          database: 'unavailable'
+        });
     }
+  }
   );
 
   const controllers:
@@ -151,7 +229,7 @@ export function createApp(pool: Pool = databasePool): express.Express {
    * Todas as rotas são registradas antes
    * dos middlewares finais.
    *
-   * A ordem é obrigatória:
+   * Ordem obrigatória:
    *
    * routes
    *   ↓
