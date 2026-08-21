@@ -63,7 +63,6 @@ export class StudyAreaWeekController {
                 studyPlanId: request.body.studyPlanId,
                 weekStartDate: request.body.weekStartDate
             });
-
             response.status(201).json(result);
         } catch (error) {
             next(error);
