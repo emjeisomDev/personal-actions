@@ -115,26 +115,21 @@ export function createApp(pool: Pool = databasePool): express.Express {
       response
     ) => {
       try {
-
         await checkDatabaseConnection();
         response
           .status(200)
           .json({
             status: 'ok',
             service: 'back-actions',
-            environment: environment.nodeEnv,
             database: 'connected'
           });
-          
       } catch (error) {
-
         console.error('Health check failed.', error);
         response
           .status(503)
           .json({
             status: 'error',
             service: 'back-actions',
-            environment: environment.nodeEnv,
             database: 'unavailable'
           });
       }
