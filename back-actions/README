@@ -9,10 +9,11 @@ Backend da aplicação personal-actions.
 - Express
 - PostgreSQL
 - Vitest
+- Render
 
 ## Requisitos
 
-- Node.js
+- Node.js 20.11+
 - PostgreSQL
 
 ## Instalação
