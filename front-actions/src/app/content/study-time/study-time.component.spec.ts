@@ -1,20 +1,51 @@
-import {
-  ComponentFixture,
-  TestBed
-} from '@angular/core/testing';
-
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Observable, of, throwError } from 'rxjs';
 import { StudyTimeComponent } from './study-time.component';
+import { StudyArea } from './models/study-area.model';
+import { StudyAreaService } from './services/study-area.service';
 import { StudyCardComponent } from './study-card/study-card.component';
 
 describe('StudyTimeComponent', () => {
   let component: StudyTimeComponent;
   let fixture: ComponentFixture<StudyTimeComponent>;
+  let studyAreaService: jasmine.SpyObj<StudyAreaService>;
+
+  const studyAreas: StudyArea[] = [
+    {
+      id: 'study-area-1',
+      name: 'Matemática',
+      weeklyGoalMinutes: 300
+    },
+    {
+      id: 'study-area-2',
+      name: 'Português',
+      weeklyGoalMinutes: 240
+    }
+  ];
 
   beforeEach(async () => {
+    studyAreaService =
+      jasmine.createSpyObj(
+        'StudyAreaService',
+        ['getAll']
+      );
+
+    studyAreaService
+      .getAll
+      .and.returnValue(
+        of(studyAreas)
+      );
+
     await TestBed.configureTestingModule({
       declarations: [
         StudyTimeComponent,
         StudyCardComponent
+      ],
+      providers: [
+        {
+          provide: StudyAreaService,
+          useValue: studyAreaService
+        }
       ]
     }).compileComponents();
 
@@ -23,386 +54,190 @@ describe('StudyTimeComponent', () => {
         StudyTimeComponent
       );
 
-    component = fixture.componentInstance;
-
-    fixture.detectChanges();
+    component =
+      fixture.componentInstance;
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
-  it('should contain study areas', () => {
     expect(
-      component.studyAreas.length
-    ).toBeGreaterThan(0);
+      component
+    ).toBeTruthy();
   });
 
-  it('should render one study card for each study area', () => {
+  it('should start without study areas', () => {
+    expect(
+      component.studyAreas
+    ).toEqual([]);
+
+    expect(
+      studyAreaService.getAll
+    ).not.toHaveBeenCalled();
+  });
+
+  it('should load study areas from the backend service', () => {
+    fixture.detectChanges();
+
+    expect(
+      studyAreaService.getAll
+    ).toHaveBeenCalledTimes(1);
+
+    expect(
+      component.studyAreas
+    ).toEqual(
+      studyAreas
+    );
+  });
+
+  it('should expose the exact study area contract returned by the service', () => {
+    fixture.detectChanges();
+
+    expect(
+      component.studyAreas
+    ).toEqual([
+      {
+        id: 'study-area-1',
+        name: 'Matemática',
+        weeklyGoalMinutes: 300
+      },
+      {
+        id: 'study-area-2',
+        name: 'Português',
+        weeklyGoalMinutes: 240
+      }
+    ]);
+  });
+
+  it('should render one study card for each study area returned by the backend', () => {
+    fixture.detectChanges();
+
     const cards =
-      fixture.nativeElement.querySelectorAll(
-        'app-study-card'
-      );
+      fixture.nativeElement
+        .querySelectorAll(
+          'app-study-card'
+        );
 
     expect(
       cards.length
     ).toBe(
-      component.studyAreas.length
+      studyAreas.length
     );
   });
 
-  it('should identify study areas by unique ids', () => {
-    const ids =
-      component.studyAreas.map(
-        studyArea => studyArea.id
-      );
-
+  it('should track study areas by id', () => {
     expect(
-      new Set(ids).size
-    ).toBe(ids.length);
-  });
-
-  it('should add a new study record', () => {
-    const studyArea =
-      component.studyAreas[0];
-
-    const recordsBefore =
-      studyArea.studyRecords.length;
-
-    component.onStudyTimeAdded(
-      studyArea,
-      30
-    );
-
-    const updatedStudyArea =
-      component.studyAreas.find(
-        area =>
-          area.id === studyArea.id
-      );
-
-    expect(
-      updatedStudyArea
-        ?.studyRecords.length
-    ).toBe(recordsBefore + 1);
-
-    const lastRecord =
-      updatedStudyArea
-        ?.studyRecords.at(-1);
-
-    expect(
-      lastRecord?.minutes
-    ).toBe(30);
-
-    expect(
-      lastRecord?.date
-    ).toBe(getTodayDate());
-
-    expect(
-      lastRecord?.id
-    ).toBeTruthy();
-  });
-
-  it('should create independent records for each submission', () => {
-    const studyArea =
-      component.studyAreas[0];
-
-    const recordsBefore =
-      studyArea.studyRecords.length;
-
-    component.onStudyTimeAdded(
-      studyArea,
-      30
-    );
-
-    component.onStudyTimeAdded(
-      studyArea,
-      45
-    );
-
-    const updatedStudyArea =
-      component.studyAreas.find(
-        area =>
-          area.id === studyArea.id
-      );
-
-    expect(
-      updatedStudyArea
-        ?.studyRecords.length
-    ).toBe(recordsBefore + 2);
-
-    const records =
-      updatedStudyArea?.studyRecords ?? [];
-
-    expect(
-      records.at(-2)?.minutes
-    ).toBe(30);
-
-    expect(
-      records.at(-1)?.minutes
-    ).toBe(45);
-
-    expect(
-      records.at(-2)?.id
-    ).not.toBe(
-      records.at(-1)?.id
-    );
-  });
-
-  it('should remove the last inserted record first', () => {
-    const studyArea =
-      component.studyAreas[0];
-
-    component.onStudyTimeAdded(
-      studyArea,
-      30
-    );
-
-    component.onStudyTimeAdded(
-      studyArea,
-      45
-    );
-
-    component.onStudyTimeAdded(
-      studyArea,
-      60
-    );
-
-    component.onStudyTimeRemoved(
-      studyArea
-    );
-
-    const updatedStudyArea =
-      component.studyAreas.find(
-        area =>
-          area.id === studyArea.id
-      );
-
-    expect(
-      updatedStudyArea
-        ?.studyRecords.at(-1)
-        ?.minutes
-    ).toBe(45);
-  });
-
-  it('should remove all new records in reverse order', () => {
-    const studyArea =
-      component.studyAreas[0];
-
-    const recordsBefore =
-      studyArea.studyRecords.length;
-
-    component.onStudyTimeAdded(
-      studyArea,
-      30
-    );
-
-    component.onStudyTimeAdded(
-      studyArea,
-      45
-    );
-
-    component.onStudyTimeAdded(
-      studyArea,
-      60
-    );
-
-    component.onStudyTimeRemoved(
-      studyArea
-    );
-
-    component.onStudyTimeRemoved(
-      studyArea
-    );
-
-    component.onStudyTimeRemoved(
-      studyArea
-    );
-
-    const updatedStudyArea =
-      component.studyAreas.find(
-        area =>
-          area.id === studyArea.id
-      );
-
-    expect(
-      updatedStudyArea
-        ?.studyRecords.length
-    ).toBe(recordsBefore);
-  });
-
-  it('should not remove a record when there are no records', () => {
-    const studyArea =
-      component.studyAreas[0];
-
-    studyArea.studyRecords = [];
-
-    component.onStudyTimeRemoved(
-      studyArea
-    );
-
-    const updatedStudyArea =
-      component.studyAreas.find(
-        area =>
-          area.id === studyArea.id
-      );
-
-    expect(
-      updatedStudyArea?.studyRecords
-    ).toEqual([]);
-  });
-
-  it('should ignore invalid study time', () => {
-    const studyArea =
-      component.studyAreas[0];
-
-    const recordsBefore =
-      studyArea.studyRecords.length;
-
-    component.onStudyTimeAdded(
-      studyArea,
-      0
-    );
-
-    component.onStudyTimeAdded(
-      studyArea,
-      -30
-    );
-
-    const updatedStudyArea =
-      component.studyAreas.find(
-        area =>
-          area.id === studyArea.id
-      );
-
-    expect(
-      updatedStudyArea
-        ?.studyRecords.length
-    ).toBe(recordsBefore);
-  });
-
-  it('should create a record with id and creation timestamp', () => {
-    const studyArea =
-      component.studyAreas[0];
-
-    const recordsBefore =
-      studyArea.studyRecords.length;
-
-    component.onStudyTimeAdded(
-      studyArea,
-      30
-    );
-
-    const updatedStudyArea =
-      component.studyAreas.find(
-        area =>
-          area.id === studyArea.id
-      );
-
-    const lastRecord =
-      updatedStudyArea?.studyRecords.at(-1);
-
-    expect(
-      updatedStudyArea
-        ?.studyRecords.length
-    ).toBe(recordsBefore + 1);
-
-    expect(
-      lastRecord?.id
-    ).toBeTruthy();
-
-    expect(
-      lastRecord?.date
-    ).toBe(getTodayDate());
-
-    expect(
-      lastRecord?.minutes
-    ).toBe(30);
-
-    expect(
-      lastRecord?.createdAt
-    ).toBeTruthy();
-
-    expect(
-      Date.parse(
-        lastRecord?.createdAt ?? ''
+      component.trackByStudyAreaId(
+        0,
+        studyAreas[0]
       )
-    ).not.toBeNaN();
+    ).toBe(
+      'study-area-1'
+    );
+
+    expect(
+      component.trackByStudyAreaId(
+        1,
+        studyAreas[1]
+      )
+    ).toBe(
+      'study-area-2'
+    );
   });
 
-  it('should remove the last created record first', () => {
-    const studyArea =
-      component.studyAreas[0];
+  it('should expose loading state while the request is pending', () => {
+    studyAreaService.getAll.and.returnValue(
+      new Observable<StudyArea[]>(subscriber => {
+        expect(
+          component.isLoading
+        ).toBeTrue();
 
-    component.onStudyTimeAdded(
-      studyArea,
-      30
+        subscriber.next(
+          studyAreas
+        );
+
+        subscriber.complete();
+      })
     );
 
-    component.onStudyTimeAdded(
-      studyArea,
-      45
-    );
-
-    const updatedStudyArea =
-      component.studyAreas.find(
-        area =>
-          area.id === studyArea.id
-      );
-
-    const lastRecord =
-      updatedStudyArea
-        ?.studyRecords.at(-1);
+    component.loadStudyAreas();
 
     expect(
-      lastRecord?.minutes
-    ).toBe(45);
-
-    const lastRecordId =
-      lastRecord?.id;
-
-    component.onStudyTimeRemoved(
-      studyArea
-    );
-
-    const afterRemoval =
-      component.studyAreas.find(
-        area =>
-          area.id === studyArea.id
-      );
-
-    expect(
-      afterRemoval
-        ?.studyRecords
-        .some(
-          record =>
-            record.id === lastRecordId
-        )
+      component.isLoading
     ).toBeFalse();
 
     expect(
-      afterRemoval
-        ?.studyRecords
-        .at(-1)
-        ?.minutes
-    ).toBe(30);
+      component.studyAreas
+    ).toEqual(
+      studyAreas
+    );
   });
 
+  it('should clear the error before loading study areas', () => {
+    component.errorMessage =
+      'previous error';
 
+    component.loadStudyAreas();
+
+    expect(
+      component.errorMessage
+    ).toBeNull();
+
+    expect(
+      studyAreaService.getAll
+    ).toHaveBeenCalled();
+  });
+
+  it('should handle backend errors without creating local data', () => {
+    studyAreaService.getAll.and.returnValue(
+      throwError(
+        () => new Error(
+          'HTTP error'
+        )
+      )
+    );
+
+    component.loadStudyAreas();
+
+    expect(
+      component.studyAreas
+    ).toEqual([]);
+
+    expect(
+      component.isLoading
+    ).toBeFalse();
+
+    expect(
+      component.errorMessage
+    ).toBe(
+      'Não foi possível carregar as áreas de estudo.'
+    );
+  });
+
+  it('should clear existing areas when loading fails', () => {
+    component.studyAreas =
+      [...studyAreas];
+
+    studyAreaService.getAll.and.returnValue(
+      throwError(
+        () => new Error(
+          'HTTP error'
+        )
+      )
+    );
+
+    component.loadStudyAreas();
+
+    expect(
+      component.studyAreas
+    ).toEqual([]);
+  });
+
+  it('should stop using the observable when the component is destroyed', () => {
+    fixture.detectChanges();
+
+    component.ngOnDestroy();
+
+    expect(
+      component
+    ).toBeTruthy();
+  });
 });
-
-function getTodayDate(): string {
-  const today = new Date();
-
-  const year =
-    today.getFullYear();
-
-  const month = String(
-    today.getMonth() + 1
-  ).padStart(2, '0');
-
-  const day = String(
-    today.getDate()
-  ).padStart(2, '0');
-
-  return `${year}-${month}-${day}`;
-}
