@@ -3,6 +3,7 @@ export interface StudyRecord {
   date: string;
   minutes: number;
   createdAt: string;
+  studyAreaWeekId: string;
 }
 
 // JSON
