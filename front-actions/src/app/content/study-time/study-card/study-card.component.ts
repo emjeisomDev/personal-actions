@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { StudyArea } from '../models/study-area.model';
 
 
@@ -9,21 +9,13 @@ import { StudyArea } from '../models/study-area.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
+
 export class StudyCardComponent {
+
   @Input({
     required: true
   })
   studyArea!: StudyArea;
-
-  get weeklyGoalMinutes(): number {
-    return this.studyArea.weeklyGoalMinutes;
-  }
-
-  get weeklyGoalLabel(): string {
-    return this.formatMinutes(
-      this.weeklyGoalMinutes
-    );
-  }
 
   formatMinutes(minutes: number): string {
     const hours = Math.floor(minutes / 60);

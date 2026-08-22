@@ -12,13 +12,17 @@
         </p>
       </div>
 
-      <button type="button" class="study-area-manager__close" aria-label="Fechar gerenciador de áreas"
-        [disabled]="isSaving || deletingId !== null" (click)="close()">
+      <button type="button" class="study-area-manager__close" aria-label="Fechar gerenciador de áreas" [disabled]="
+          isSaving ||
+          deletingId !== null
+        " (click)="close()">
         ×
       </button>
+      
     </header>
 
     <div class="study-area-manager__content">
+
       @if (errorMessage) {
       <div class="study-area-manager__error" role="alert" aria-live="assertive">
         {{ errorMessage }}
@@ -99,7 +103,9 @@
 
             <p class="study-area-manager__item-goal">
               Meta:
-              {{ formatMinutes(studyArea.weeklyGoalMinutes) }}
+              {{ formatMinutes(
+              studyArea.weeklyGoalMinutes
+              ) }}
               por semana
             </p>
           </div>
