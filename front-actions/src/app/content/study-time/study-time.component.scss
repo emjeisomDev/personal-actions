@@ -5,6 +5,13 @@
     margin-bottom: 24px;
   }
 
+  &__heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
   &__title {
     color: var(--color-text);
     font-size: 1.5rem;
@@ -16,6 +23,36 @@
     margin-top: 8px;
     color: var(--color-muted);
     font-size: 0.9375rem;
+  }
+
+  &__manage-button {
+    flex: 0 0 auto;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--color-primary, #2563eb);
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition:
+      background-color 160ms ease,
+      transform 160ms ease;
+  }
+
+  &__manage-button:hover {
+    background: var(--color-primary-hover, #1d4ed8);
+  }
+
+  &__manage-button:active {
+    transform: translateY(1px);
+  }
+
+  &__manage-button:focus-visible,
+  &__retry-button:focus-visible {
+    outline: 3px solid var(--color-focus, rgba(37, 99, 235, 0.3));
+    outline-offset: 2px;
   }
 
   &__cards {
@@ -31,6 +68,37 @@
     color: var(--color-muted);
     text-align: center;
   }
+
+  &__status {
+    padding: 24px;
+    color: var(--color-muted);
+    text-align: center;
+  }
+
+  &__error {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid var(--color-danger-border, #fecaca);
+    border-radius: 8px;
+    background: var(--color-danger-background, #fef2f2);
+    color: var(--color-danger, #b91c1c);
+  }
+
+  &__retry-button {
+    flex: 0 0 auto;
+    min-height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--color-danger, #b91c1c);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--color-danger, #b91c1c);
+    cursor: pointer;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
 }
 
 @media (max-width: 1100px) {
@@ -40,7 +108,20 @@
 }
 
 @media (max-width: 768px) {
+  .study-time__heading {
+    flex-direction: column;
+  }
+
+  .study-time__manage-button {
+    width: 100%;
+  }
+
   .study-time__cards {
     grid-template-columns: 1fr;
+  }
+
+  .study-time__error {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

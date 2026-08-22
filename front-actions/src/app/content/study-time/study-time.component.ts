@@ -15,10 +15,9 @@ export class StudyTimeComponent
   implements OnInit, OnDestroy {
 
   studyAreas: StudyArea[] = [];
-
   isLoading = false;
-
   errorMessage: string | null = null;
+  isStudyAreaManagerOpen = false;
 
   private readonly destroy$ = new Subject<void>();
 
@@ -46,9 +45,7 @@ export class StudyTimeComponent
         takeUntil(this.destroy$)
       )
       .subscribe({
-        next: (
-          studyAreas: StudyArea[]
-        ) => {
+        next: (studyAreas: StudyArea[]) => {
           this.studyAreas = studyAreas;
           this.isLoading = false;
           this.changeDetectorRef.markForCheck();
@@ -61,6 +58,16 @@ export class StudyTimeComponent
           this.changeDetectorRef.markForCheck();
         }
       });
+  }
+
+  openStudyAreaManager(): void {
+    this.isStudyAreaManagerOpen = true;
+    this.changeDetectorRef.markForCheck();
+  }
+
+  closeStudyAreaManager(): void {
+    this.isStudyAreaManagerOpen = false;
+    this.loadStudyAreas();
   }
 
   trackByStudyAreaId(_index: number, studyArea: StudyArea): string {

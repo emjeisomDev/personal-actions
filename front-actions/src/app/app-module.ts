@@ -6,10 +6,12 @@ import { App } from './app';
 import { HeaderFooterModule } from './header-footer/header-footer.module';
 import { SidebarModule } from './sidebar/sidebar.module';
 import { ContentModule } from './content/content.module';
+import { StudyAreaManagerComponent } from './study-area-manager.component/study-area-manager.component';
 
 @NgModule({
   declarations: [
-    App
+    App,
+    StudyAreaManagerComponent
   ],
   imports: [
     BrowserModule,

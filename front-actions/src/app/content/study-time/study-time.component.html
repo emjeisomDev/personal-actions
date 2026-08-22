@@ -1,25 +1,74 @@
 <section class="study-time">
   <header class="study-time__header">
-    <h1 class="study-time__title">
-      Horas de Estudo
-    </h1>
+    <div class="study-time__heading">
+      <div>
 
-    <p class="study-time__description">
-      Acompanhe seu progresso semanal por área de estudo.
-    </p>
+        <h1 class="study-time__title">
+          Horas de Estudo
+        </h1>
+
+        <p class="study-time__description">
+          Acompanhe seu progresso semanal por área de estudo.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="study-time__manage-button"
+        (click)="openStudyAreaManager()"
+      >
+        Gerenciar Áreas
+      </button>
+    </div>
   </header>
 
-  <div class="study-time__cards">
-    @for (studyArea of studyAreas; track studyArea.id) {
-      <app-study-card
-        [studyArea]="studyArea"
-        (studyTimeAdded)="onStudyTimeAdded(studyArea, $event)"
-        (studyTimeRemoved)="onStudyTimeRemoved(studyArea)"
-      />
-    } @empty {
-      <p class="study-time__empty">
-        Nenhuma área de estudo cadastrada.
-      </p>
-    }
-  </div>
+  @if (isLoading) {
+    <div
+      class="study-time__status"
+      role="status"
+      aria-live="polite"
+    >
+      Carregando áreas de estudo...
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div
+      class="study-time__error"
+      role="alert"
+    >
+      {{ errorMessage }}
+
+      <button
+        type="button"
+        class="study-time__retry-button"
+        (click)="loadStudyAreas()"
+      >
+        Tentar novamente
+      </button>
+    </div>
+  }
+
+  @if (!isLoading && !errorMessage) {
+    <div class="study-time__cards">
+      @for (
+        studyArea of studyAreas;
+        track studyArea.id
+      ) {
+        <app-study-card
+          [studyArea]="studyArea"
+        />
+      } @empty {
+        <p class="study-time__empty">
+          Nenhuma área de estudo cadastrada.
+        </p>
+      }
+    </div>
+  }
+
+  @if (isStudyAreaManagerOpen) {
+    <app-study-area-manager
+      (closed)="closeStudyAreaManager()"
+    />
+  }
 </section>

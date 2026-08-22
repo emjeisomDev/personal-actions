@@ -6,6 +6,8 @@ import { HomeComponent } from './home/home.component';
 import { ContentComponent } from './content/content.component';
 import { StudyTimeComponent } from './study-time/study-time.component';
 import { StudyCardComponent } from './study-time/study-card/study-card.component';
+import { StudyAreaManagerComponent } from './study-time/study-area-manager/study-area-manager.component';
+import { FormsModule } from '@angular/forms';
 
 
 @NgModule({
@@ -13,10 +15,12 @@ import { StudyCardComponent } from './study-time/study-card/study-card.component
     ContentComponent,
     HomeComponent,
     StudyTimeComponent,
-    StudyCardComponent
+    StudyCardComponent,
+    StudyAreaManagerComponent
   ],
   imports: [
     CommonModule,
+    FormsModule,
     RouterModule
   ],
   exports: [
@@ -25,4 +29,4 @@ import { StudyCardComponent } from './study-time/study-card/study-card.component
     StudyTimeComponent
   ]
 })
-export class ContentModule { }
+export class ContentModule {}
