@@ -1,13 +1,25 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  HostListener,
+  OnDestroy,
+  OnInit,
+  Output
+} from '@angular/core';
+
 import { Subject, takeUntil } from 'rxjs';
 
 import { CreateStudyAreaRequest, StudyAreaService, UpdateStudyAreaRequest } from '../services/study-area.service';
+
 import { StudyArea } from '../models/study-area.model';
 
 @Component({
   selector: 'app-study-area-manager',
   templateUrl: './study-area-manager.component.html',
   styleUrl: './study-area-manager.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
 
@@ -42,10 +54,19 @@ export class StudyAreaManagerComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  @HostListener('document:keydown.escape', ['$event'])
+  onEscape(event: Event): void {
+    event.preventDefault();
+    this.close();
+  }
+
   loadStudyAreas(): void {
+    if (this.isLoading) {
+      return;
+    }
     this.isLoading = true;
     this.errorMessage = null;
-
+    this.changeDetectorRef.markForCheck();
     this.studyAreaService
       .getAll()
       .pipe(
@@ -81,6 +102,7 @@ export class StudyAreaManagerComponent implements OnInit, OnDestroy {
 
   startEdit(studyArea: StudyArea): void {
     this.editingId = studyArea.id;
+
     this.name = studyArea.name;
     this.weeklyGoalMinutes = String(studyArea.weeklyGoalMinutes);
     this.validationMessage = null;
@@ -94,21 +116,27 @@ export class StudyAreaManagerComponent implements OnInit, OnDestroy {
     this.weeklyGoalMinutes = '';
     this.validationMessage = null;
     this.errorMessage = null;
+
     this.changeDetectorRef.markForCheck();
   }
 
   save(): void {
+    if (this.isSaving || this.deletingId !== null) {
+      return;
+    }
+
     this.validationMessage = null;
     this.errorMessage = null;
     const input = this.buildInput();
 
     if (!input) {
+      this.changeDetectorRef.markForCheck();
       return;
     }
 
     this.isSaving = true;
 
-    if (this.editingId) {
+    if (this.editingId !== null) {
       this.update(this.editingId, input);
       return;
     }
@@ -116,9 +144,7 @@ export class StudyAreaManagerComponent implements OnInit, OnDestroy {
     this.create(input);
   }
 
-  delete(
-    studyArea: StudyArea
-  ): void {
+  delete(studyArea: StudyArea): void {
     if (this.deletingId !== null || this.isSaving) {
       return;
     }
@@ -131,7 +157,7 @@ export class StudyAreaManagerComponent implements OnInit, OnDestroy {
 
     this.errorMessage = null;
     this.deletingId = studyArea.id;
-
+    this.changeDetectorRef.markForCheck();
     this.studyAreaService
       .delete(studyArea.id)
       .pipe(takeUntil(this.destroy$))

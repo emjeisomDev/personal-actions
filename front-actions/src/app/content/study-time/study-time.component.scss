@@ -38,15 +38,21 @@
     font-weight: 600;
     transition:
       background-color 160ms ease,
-      transform 160ms ease;
+      transform 160ms ease,
+      opacity 160ms ease;
   }
 
-  &__manage-button:hover {
+  &__manage-button:hover:not(:disabled) {
     background: var(--color-primary-hover, #1d4ed8);
   }
 
-  &__manage-button:active {
+  &__manage-button:active:not(:disabled) {
     transform: translateY(1px);
+  }
+
+  &__manage-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 
   &__manage-button:focus-visible,
@@ -98,6 +104,11 @@
     cursor: pointer;
     font-size: 0.8125rem;
     font-weight: 600;
+  }
+
+  &__retry-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 }
 

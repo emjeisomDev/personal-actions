@@ -11,6 +11,7 @@ import { StudyAreaService } from './services/study-area.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
+
 export class StudyTimeComponent
   implements OnInit, OnDestroy {
 
@@ -36,14 +37,15 @@ export class StudyTimeComponent
   }
 
   loadStudyAreas(): void {
+    if (this.isLoading) {
+      return;
+    }
     this.isLoading = true;
     this.errorMessage = null;
-
+    this.changeDetectorRef.markForCheck();
     this.studyAreaService
       .getAll()
-      .pipe(
-        takeUntil(this.destroy$)
-      )
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (studyAreas: StudyArea[]) => {
           this.studyAreas = studyAreas;
@@ -61,12 +63,20 @@ export class StudyTimeComponent
   }
 
   openStudyAreaManager(): void {
+    if (this.isStudyAreaManagerOpen) {
+      return;
+    }
+
     this.isStudyAreaManagerOpen = true;
     this.changeDetectorRef.markForCheck();
   }
 
   closeStudyAreaManager(): void {
+    if (!this.isStudyAreaManagerOpen) {
+      return;
+    }
     this.isStudyAreaManagerOpen = false;
+    this.changeDetectorRef.markForCheck();
     this.loadStudyAreas();
   }
 

@@ -1,8 +1,7 @@
-<section class="study-time">
+<section class="study-time" [attr.aria-busy]="isLoading">
   <header class="study-time__header">
     <div class="study-time__heading">
       <div>
-
         <h1 class="study-time__title">
           Horas de Estudo
         </h1>
@@ -12,63 +11,45 @@
         </p>
       </div>
 
-      <button
-        type="button"
-        class="study-time__manage-button"
-        (click)="openStudyAreaManager()"
-      >
+      <button type="button" class="study-time__manage-button" [disabled]="isLoading" aria-haspopup="dialog"
+        [attr.aria-expanded]="isStudyAreaManagerOpen" (click)="openStudyAreaManager()">
         Gerenciar Áreas
       </button>
     </div>
   </header>
 
   @if (isLoading) {
-    <div
-      class="study-time__status"
-      role="status"
-      aria-live="polite"
-    >
-      Carregando áreas de estudo...
-    </div>
+  <div class="study-time__status" role="status" aria-live="polite">
+    Carregando áreas de estudo...
+  </div>
   }
 
   @if (errorMessage) {
-    <div
-      class="study-time__error"
-      role="alert"
-    >
-      {{ errorMessage }}
+  <div class="study-time__error" role="alert">
+    <span> {{ errorMessage }} </span>
 
-      <button
-        type="button"
-        class="study-time__retry-button"
-        (click)="loadStudyAreas()"
-      >
-        Tentar novamente
-      </button>
-    </div>
+    <button type="button" class="study-time__retry-button" [disabled]="isLoading" (click)="loadStudyAreas()">
+      Tentar novamente
+    </button>
+  </div>
   }
 
   @if (!isLoading && !errorMessage) {
-    <div class="study-time__cards">
-      @for (
-        studyArea of studyAreas;
-        track studyArea.id
-      ) {
-        <app-study-card
-          [studyArea]="studyArea"
-        />
-      } @empty {
-        <p class="study-time__empty">
-          Nenhuma área de estudo cadastrada.
-        </p>
-      }
-    </div>
+  <div class="study-time__cards">
+    @for (
+    studyArea of studyAreas;
+    track studyArea.id
+    ) {
+    <app-study-card [studyArea]="studyArea" />
+    } @empty {
+    <p class="study-time__empty">
+      Nenhuma área de estudo cadastrada.
+    </p>
+    }
+  </div>
   }
 
   @if (isStudyAreaManagerOpen) {
-    <app-study-area-manager
-      (closed)="closeStudyAreaManager()"
-    />
+  <app-study-area-manager (closed)="closeStudyAreaManager()" />
   }
 </section>

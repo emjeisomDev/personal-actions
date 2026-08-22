@@ -1,210 +1,138 @@
-<div
-  class="study-area-manager"
-  role="presentation"
-  (click)="onBackdropClick($event)"
->
-  <section
-    class="study-area-manager__dialog"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="study-area-manager-title"
-  >
+<div class="study-area-manager" role="presentation" (click)="onBackdropClick($event)">
+  <section class="study-area-manager__dialog" role="dialog" aria-modal="true" aria-labelledby="study-area-manager-title"
+    aria-describedby="study-area-manager-description">
     <header class="study-area-manager__header">
       <div>
-        <h2
-          id="study-area-manager-title"
-          class="study-area-manager__title"
-        >
+        <h2 id="study-area-manager-title" class="study-area-manager__title">
           Gerenciar Áreas
         </h2>
 
-        <p class="study-area-manager__description">
+        <p id="study-area-manager-description" class="study-area-manager__description">
           Cadastre, edite ou exclua suas áreas de estudo.
         </p>
       </div>
 
-      <button
-        type="button"
-        class="study-area-manager__close"
-        aria-label="Fechar gerenciador de áreas"
-        [disabled]="isSaving || deletingId !== null"
-        (click)="close()"
-      >
+      <button type="button" class="study-area-manager__close" aria-label="Fechar gerenciador de áreas"
+        [disabled]="isSaving || deletingId !== null" (click)="close()">
         ×
       </button>
     </header>
 
     <div class="study-area-manager__content">
       @if (errorMessage) {
-        <div
-          class="study-area-manager__error"
-          role="alert"
-        >
-          {{ errorMessage }}
-        </div>
+      <div class="study-area-manager__error" role="alert" aria-live="assertive">
+        {{ errorMessage }}
+      </div>
       }
 
       @if (validationMessage) {
-        <div
-          class="study-area-manager__validation"
-          role="alert"
-        >
-          {{ validationMessage }}
-        </div>
+      <div class="study-area-manager__validation" role="alert" aria-live="polite">
+        {{ validationMessage }}
+      </div>
       }
 
-      <button
-        type="button"
-        class="study-area-manager__new-button"
-        [disabled]="isSaving || deletingId !== null"
-        (click)="startCreate()"
-      >
+      <button type="button" class="study-area-manager__new-button" [disabled]="
+          isLoading ||
+          isSaving ||
+          deletingId !== null
+        " (click)="startCreate()">
         Nova área
       </button>
 
-      <form
-        class="study-area-manager__form"
-        (submit)="$event.preventDefault(); save()"
-      >
+      <form class="study-area-manager__form" (submit)="$event.preventDefault(); save()">
         <div class="study-area-manager__field">
-          <label
-            for="study-area-name"
-          >
+          <label for="study-area-name">
             Nome
           </label>
 
-          <input
-            id="study-area-name"
-            name="studyAreaName"
-            type="text"
-            autocomplete="off"
-            maxlength="255"
-            [(ngModel)]="name"
-            [disabled]="isSaving"
-          />
+          <input id="study-area-name" name="studyAreaName" type="text" autocomplete="off" maxlength="255"
+            [(ngModel)]="name" [disabled]="isSaving" />
         </div>
 
         <div class="study-area-manager__field">
-          <label
-            for="study-area-weekly-goal"
-          >
+          <label for="study-area-weekly-goal">
             Meta semanal (minutos)
           </label>
 
-          <input
-            id="study-area-weekly-goal"
-            name="studyAreaWeeklyGoal"
-            type="number"
-            min="1"
-            step="1"
-            [(ngModel)]="weeklyGoalMinutes"
-            [disabled]="isSaving"
-          />
+          <input id="study-area-weekly-goal" name="studyAreaWeeklyGoal" type="number" min="1" step="1"
+            [(ngModel)]="weeklyGoalMinutes" [disabled]="isSaving" />
         </div>
 
         <div class="study-area-manager__form-actions">
-          <button
-            type="submit"
-            class="study-area-manager__save-button"
-            [disabled]="isSaving || deletingId !== null"
-          >
+          <button type="submit" class="study-area-manager__save-button" [disabled]="
+              isLoading ||
+              isSaving ||
+              deletingId !== null
+            ">
             @if (isSaving) {
-              Salvando...
+            Salvando...
             } @else if (editingId) {
-              Salvar alterações
+            Salvar alterações
             } @else {
-              Criar área
+            Criar área
             }
           </button>
 
           @if (editingId) {
-            <button
-              type="button"
-              class="study-area-manager__cancel-button"
-              [disabled]="isSaving"
-              (click)="cancelEdit()"
-            >
-              Cancelar
-            </button>
+          <button type="button" class="study-area-manager__cancel-button" [disabled]="isSaving" (click)="cancelEdit()">
+            Cancelar
+          </button>
           }
         </div>
       </form>
 
-      <div class="study-area-manager__list">
+      <div class="study-area-manager__list" [attr.aria-busy]="isLoading">
         @if (isLoading) {
-          <p
-            class="study-area-manager__status"
-            role="status"
-          >
-            Carregando áreas...
-          </p>
+        <p class="study-area-manager__status" role="status" aria-live="polite">
+          Carregando áreas...
+        </p>
         } @else {
-          @for (
-            studyArea of studyAreas;
-            track studyArea.id
-          ) {
-            <article
-              class="study-area-manager__item"
-            >
-              <div
-                class="study-area-manager__item-content"
-              >
-                <h3
-                  class="study-area-manager__item-name"
-                >
-                  {{ studyArea.name }}
-                </h3>
+        @for (
+        studyArea of studyAreas;
+        track studyArea.id
+        ) {
+        <article class="study-area-manager__item">
+          <div class="study-area-manager__item-content">
+            <h3 class="study-area-manager__item-name">
+              {{ studyArea.name }}
+            </h3>
 
-                <p
-                  class="study-area-manager__item-goal"
-                >
-                  Meta:
-                  {{ formatMinutes(studyArea.weeklyGoalMinutes) }}
-                  por semana
-                </p>
-              </div>
-
-              <div
-                class="study-area-manager__item-actions"
-              >
-                <button
-                  type="button"
-                  class="study-area-manager__edit-button"
-                  [disabled]="
-                    isSaving ||
-                    deletingId !== null
-                  "
-                  (click)="startEdit(studyArea)"
-                >
-                  Editar
-                </button>
-
-                <button
-                  type="button"
-                  class="study-area-manager__delete-button"
-                  [disabled]="
-                    isSaving ||
-                    deletingId !== null
-                  "
-                  (click)="delete(studyArea)"
-                >
-                  @if (
-                    deletingId === studyArea.id
-                  ) {
-                    Excluindo...
-                  } @else {
-                    Excluir
-                  }
-                </button>
-              </div>
-            </article>
-          } @empty {
-            <p
-              class="study-area-manager__empty"
-            >
-              Nenhuma área de estudo cadastrada.
+            <p class="study-area-manager__item-goal">
+              Meta:
+              {{ formatMinutes(studyArea.weeklyGoalMinutes) }}
+              por semana
             </p>
-          }
+          </div>
+
+          <div class="study-area-manager__item-actions">
+            <button type="button" class="study-area-manager__edit-button" [disabled]="
+                    isLoading ||
+                    isSaving ||
+                    deletingId !== null
+                  " (click)="startEdit(studyArea)">
+              Editar
+            </button>
+
+            <button type="button" class="study-area-manager__delete-button" [disabled]="
+                    isLoading ||
+                    isSaving ||
+                    deletingId !== null
+                  " (click)="delete(studyArea)">
+              @if (
+              deletingId === studyArea.id
+              ) {
+              Excluindo...
+              } @else {
+              Excluir
+              }
+            </button>
+          </div>
+        </article>
+        } @empty {
+        <p class="study-area-manager__empty">
+          Nenhuma área de estudo cadastrada.
+        </p>
+        }
         }
       </div>
     </div>
